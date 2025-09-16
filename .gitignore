@@ -8,6 +8,7 @@
 *.out
 go.work
 vendor/
+backend/opensport
 
 # MongoDB
 data/
