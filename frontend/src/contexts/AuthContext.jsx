@@ -23,6 +23,9 @@ export const AuthProvider = ({ children }) => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
 
+  // Configure axios to include cookies
+  axios.defaults.withCredentials = true;
+
   useEffect(() => {
     const initializeAuth = async () => {
       if (token) {
@@ -32,6 +35,14 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('Failed to get user profile:', error);
           logout();
+        }
+      } else {
+        // Check if there's a session cookie by trying to get profile without token
+        try {
+          const response = await axios.get(`${API_BASE_URL}/profile`);
+          setUser(response.data.user);
+        } catch (error) {
+          // No session cookie, user is not logged in
         }
       }
       setLoading(false);
@@ -63,6 +74,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async () => {
+    try {
+      // Get the OAuth URL from the backend
+      const response = await axios.get(`${API_BASE_URL}/auth/google`);
+      const { url } = response.data;
+      
+      // Redirect to Google OAuth
+      window.location.href = url;
+      
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || 'Google login failed',
+      };
+    }
+  };
+
   const register = async (username, email, password) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/register`, {
@@ -80,7 +109,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/auth/logout`);
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    }
+    
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
@@ -91,6 +126,7 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     login,
+    googleLogin,
     register,
     logout,
     loading,

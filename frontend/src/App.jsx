@@ -9,6 +9,7 @@ import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Sports from './components/Sports';
 import Trainings from './components/Trainings';
+import OAuthCallback from './components/OAuthCallback';
 
 const theme = createTheme({
   palette: {
@@ -37,6 +38,7 @@ function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/auth/callback" element={<OAuthCallback />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
