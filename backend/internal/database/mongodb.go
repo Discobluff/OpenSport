@@ -32,7 +32,15 @@ func Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	clientOpts := options.Client().ApplyURI(mongoURI)
+
+    clientOpts.SetAuth(options.Credential{
+        Username:   "admin",
+        Password:   "password123",
+        AuthSource: "admin",
+    })
+
+	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
 		return fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
