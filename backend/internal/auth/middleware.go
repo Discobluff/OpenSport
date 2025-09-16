@@ -9,9 +9,25 @@ import (
 
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// First try to get session from cookie
+		sessionCookie, err := c.Cookie("session_id")
+		if err == nil && sessionCookie != "" {
+			session, exists := GetSession(sessionCookie)
+			if exists {
+				// Store user information in context
+				c.Set("user_id", session.UserID.Hex())
+				c.Set("username", session.Username)
+				c.Set("email", session.Email)
+				c.Set("role", session.Role)
+				c.Next()
+				return
+			}
+		}
+
+		// Fall back to JWT token authentication
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header or session cookie required"})
 			c.Abort()
 			return
 		}

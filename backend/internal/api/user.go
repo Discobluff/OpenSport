@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"net/http"
 	"time"
 
@@ -12,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func RegisterUser(c *gin.Context) {
@@ -31,17 +32,10 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
-		return
-	}
-
 	user := models.User{
 		Username:  req.Username,
 		Email:     req.Email,
-		Password:  string(hashedPassword),
+		GoogleID:  "", // Empty for traditional registration
 		Role:      "user",
 		Sports:    []primitive.ObjectID{},
 		CreatedAt: time.Now(),
@@ -55,7 +49,6 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	user.ID = result.InsertedID.(primitive.ObjectID)
-	user.Password = "" // Don't return password
 
 	c.JSON(http.StatusCreated, gin.H{"user": user})
 }
@@ -76,11 +69,15 @@ func LoginUser(c *gin.Context) {
 	}
 
 	// Check password
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+	// Since we're moving to OAuth, this function might not be used
+	// but keeping it for backward compatibility
+	if user.GoogleID != "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Please use Google OAuth to login"})
 		return
 	}
+	
+	// For users created before OAuth migration, we might not have password
+	c.JSON(http.StatusUnauthorized, gin.H{"error": "Please use Google OAuth to login"})
 
 	// Generate JWT token
 	token, err := auth.GenerateToken(user.ID, user.Username, user.Email, user.Role)
@@ -89,7 +86,6 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	user.Password = "" // Don't return password
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
 		"user":  user,
@@ -112,6 +108,158 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
-	user.Password = ""
 	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+func GoogleOAuthLogin(c *gin.Context) {
+	// Generate random state parameter
+	state := make([]byte, 16)
+	rand.Read(state)
+	stateString := hex.EncodeToString(state)
+	
+	// Store state in session or cookie for validation
+	c.SetCookie("oauth_state", stateString, 600, "/", "", false, true) // 10 minutes
+	
+	url := auth.GetGoogleOAuthURL(stateString)
+	c.JSON(http.StatusOK, gin.H{"url": url})
+}
+
+func GoogleOAuthCallback(c *gin.Context) {
+	// Verify state parameter
+	stateCookie, err := c.Cookie("oauth_state")
+	if err != nil || stateCookie != c.Query("state") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid state parameter"})
+		return
+	}
+	
+	// Clear the state cookie
+	c.SetCookie("oauth_state", "", -1, "/", "", false, true)
+	
+	// Exchange code for token
+	code := c.Query("code")
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No authorization code provided"})
+		return
+	}
+	
+	token, err := auth.ExchangeCodeForToken(code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exchange code for token"})
+		return
+	}
+	
+	// Get user info from Google
+	userInfo, err := auth.GetGoogleUserInfo(token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
+		return
+	}
+	
+	email, ok := userInfo["email"].(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to get email from Google"})
+		return
+	}
+	
+	// Check if email domain is allowed
+	if !auth.IsValidDomain(email) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Email domain not allowed"})
+		return
+	}
+	
+	googleID, ok := userInfo["id"].(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to get Google ID"})
+		return
+	}
+	
+	name, _ := userInfo["name"].(string)
+	picture, _ := userInfo["picture"].(string)
+	
+	// Check if user exists
+	collection := database.GetCollection("users")
+	var user models.User
+	err = collection.FindOne(context.TODO(), bson.M{
+		"$or": []bson.M{
+			{"email": email},
+			{"google_id": googleID},
+		},
+	}).Decode(&user)
+	
+	if err != nil {
+		// User doesn't exist, create new user
+		user = models.User{
+			Username:  name,
+			Email:     email,
+			GoogleID:  googleID,
+			Picture:   picture,
+			Role:      "user",
+			Sports:    []primitive.ObjectID{},
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		
+		result, err := collection.InsertOne(context.TODO(), user)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+			return
+		}
+		
+		user.ID = result.InsertedID.(primitive.ObjectID)
+	} else {
+		// User exists, update their info
+		user.Username = name
+		user.Picture = picture
+		user.UpdatedAt = time.Now()
+		
+		_, err = collection.UpdateOne(
+			context.TODO(),
+			bson.M{"_id": user.ID},
+			bson.M{"$set": bson.M{
+				"username":   user.Username,
+				"picture":    user.Picture,
+				"updated_at": user.UpdatedAt,
+			}},
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+			return
+		}
+	}
+	
+	// Create session
+	session, err := auth.CreateSession(user.ID, user.Username, user.Email, user.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
+		return
+	}
+	
+	// Set session cookie
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("session_id", session.ID, int(time.Hour*24*7/time.Second), "/", "", false, true) // 7 days
+	
+	// Also generate JWT token for backward compatibility
+	jwtToken, err := auth.GenerateToken(user.ID, user.Username, user.Email, user.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"token": jwtToken,
+		"user":  user,
+	})
+}
+
+func LogoutUser(c *gin.Context) {
+	// Get session ID from cookie
+	sessionCookie, err := c.Cookie("session_id")
+	if err == nil && sessionCookie != "" {
+		auth.DeleteSession(sessionCookie)
+	}
+	
+	// Clear the session cookie
+	c.SetCookie("session_id", "", -1, "/", "", false, true)
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }

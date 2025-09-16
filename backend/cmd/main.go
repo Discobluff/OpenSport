@@ -15,6 +15,8 @@ import (
 func main() {
 	// Initialize auth
 	auth.Init()
+	auth.InitOAuth()
+	auth.StartSessionCleanup()
 
 	// Connect to database
 	if err := database.Connect(); err != nil {
@@ -37,6 +39,9 @@ func main() {
 	// Public routes
 	r.POST("/api/auth/register", api.RegisterUser)
 	r.POST("/api/auth/login", api.LoginUser)
+	r.GET("/api/auth/google", api.GoogleOAuthLogin)
+	r.GET("/api/auth/google/callback", api.GoogleOAuthCallback)
+	r.POST("/api/auth/logout", api.LogoutUser)
 	r.GET("/api/sports", api.GetSports)
 	r.GET("/api/trainings", api.GetTrainings)
 
