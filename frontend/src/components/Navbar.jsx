@@ -45,16 +45,10 @@ const Navbar = () => {
           </Box>
         )}
 
-        {user ? (
+        {user && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
-          </Box>
-        ) : (
-          <Box>
-            <Button color="inherit" onClick={() => navigate('/login')}>
-              Login
+              Déconnexion
             </Button>
           </Box>
         )}
