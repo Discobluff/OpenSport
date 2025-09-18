@@ -47,9 +47,6 @@ const Navbar = () => {
 
         {user ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2">
-              Welcome, {user.username}
-            </Typography>
             <Button color="inherit" onClick={handleLogout}>
               Logout
             </Button>
