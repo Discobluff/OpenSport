@@ -6,7 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-
+	"log"
+	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -14,6 +15,10 @@ import (
 var googleOAuthConfig *oauth2.Config
 
 func InitOAuth() {
+	err := godotenv.Load("../.env")
+	if err != nil{
+		log.Fatal("Erreur chargement .env:", err)
+	}	
 	googleOAuthConfig = &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),

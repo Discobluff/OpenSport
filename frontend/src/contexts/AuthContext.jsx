@@ -92,23 +92,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, email, password) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
-        username,
-        email,
-        password,
-      });
-
-      return { success: true, user: response.data.user };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.error || 'Registration failed',
-      };
-    }
-  };
-
   const logout = async () => {
     try {
       await axios.post(`${API_BASE_URL}/auth/logout`);
@@ -127,7 +110,6 @@ export const AuthProvider = ({ children }) => {
     token,
     login,
     googleLogin,
-    register,
     logout,
     loading,
   };

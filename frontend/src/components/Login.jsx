@@ -87,21 +87,6 @@ const Login = () => {
           >
             {loading ? 'Redirecting to Google...' : 'Sign in with Google'}
           </Button>
-          
-          <Divider sx={{ my: 2 }}>OR</Divider>
-          
-          <Box textAlign="center">
-            <Typography variant="body2">
-              Don't have a Google account with the allowed domain?{' '}
-              <Link
-                component="button"
-                variant="body2"
-                onClick={() => navigate('/register')}
-              >
-                Contact administrator
-              </Link>
-            </Typography>
-          </Box>
         </Box>
       </Paper>
     </Container>

@@ -5,7 +5,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
-import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Sports from './components/Sports';
 import Trainings from './components/Trainings';
@@ -37,7 +36,6 @@ function App() {
             <Navbar />
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
               <Route path="/auth/callback" element={<OAuthCallback />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>

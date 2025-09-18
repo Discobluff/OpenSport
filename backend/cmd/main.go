@@ -37,7 +37,6 @@ func main() {
 	}))
 
 	// Public routes
-	r.POST("/api/auth/register", api.RegisterUser)
 	r.POST("/api/auth/login", api.LoginUser)
 	r.GET("/api/auth/google", api.GoogleOAuthLogin)
 	r.GET("/api/auth/google/callback", api.GoogleOAuthCallback)
