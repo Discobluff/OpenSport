@@ -31,27 +31,38 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8, textAlign: 'center' }}>
-      <img 
-        src={`/bds.png`} 
-        alt="Logo du bds" 
-        style={{ maxWidth: '100%', height: 'auto', marginBottom: '20px' }} 
-      />
-      <Button
-        variant="contained"
-        onClick={handleGoogleLogin}
-        sx={{ 
-          py: 1.5,
-          backgroundColor: '#4285f4',
-          '&:hover': {
-            backgroundColor: '#357ae8'
-          }
-        }}
-        disabled={loading}
-      >
-        {loading ? 'Redirection vers Google...' : 'Connexion avec Google'}
-      </Button>
-    </Container>
+    <Container
+  sx={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  }}
+>
+  <img
+    src="/bdsRecadre.png"
+    alt="Logo du BDS"
+    style={{
+      marginTop: '10%',
+      maxWidth: '40%',
+      height: 'auto',
+    }}
+  />
+  <Button
+    variant="contained"
+    onClick={handleGoogleLogin}
+    sx={{
+      fontWeight:'bold',
+      py: 1.5,
+      backgroundColor: '#fe8400',
+      '&:hover': {
+        backgroundColor: '#c76f0f',
+      },
+    }}
+    disabled={loading}
+  >
+    {loading ? 'Chargement...' : 'Se connecter avec Google'}
+  </Button>
+</Container>
   );
 };
 

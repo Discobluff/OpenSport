@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -33,26 +33,32 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="App">
-            <Navbar />
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback" element={<OAuthCallback />} />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
+              <Route path="*" element={
+                <>
+                  <Navbar />
+                  <Routes>
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/sports" element={
+                      <ProtectedRoute>
+                        <Sports />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/trainings" element={
+                      <ProtectedRoute>
+                        <Trainings />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/" element={<Navigate to="/dashboard" />} />
+                  </Routes>
+                </>
               } />
-              <Route path="/sports" element={
-                <ProtectedRoute>
-                  <Sports />
-                </ProtectedRoute>
-              } />
-              <Route path="/trainings" element={
-                <ProtectedRoute>
-                  <Trainings />
-                </ProtectedRoute>
-              } />
-              <Route path="/" element={<Navigate to="/dashboard" />} />
             </Routes>
           </div>
         </Router>
