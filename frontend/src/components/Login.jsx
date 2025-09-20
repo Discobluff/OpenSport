@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -14,8 +14,15 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { googleLogin } = useAuth();
+  const { googleLogin, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect to dashboard if user is already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/dashboard');
+    }
+  }, [user, authLoading, navigate]);
 
   const handleGoogleLogin = async () => {
     setError('');
@@ -29,6 +36,25 @@ const Login = () => {
     }
     // If successful, the user will be redirected to Google OAuth
   };
+
+  // Show loading indicator while auth state is being determined
+  if (authLoading) {
+    return (
+      <Container
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '80vh',
+        }}
+      >
+        <Typography variant="h6">
+          Chargement...
+        </Typography>
+      </Container>
+    );
+  }
 
   return (
     <Container
@@ -47,6 +73,11 @@ const Login = () => {
       height: 'auto',
     }}
   />
+  {error && (
+    <Alert severity="error" sx={{ mb: 2, mt: 2, width: '100%', maxWidth: '400px' }}>
+      {error}
+    </Alert>
+  )}
   <Button
     variant="contained"
     onClick={handleGoogleLogin}
