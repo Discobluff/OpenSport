@@ -73,7 +73,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Note: Not depending on [token] is intentional to prevent re-runs when token changes
 
   const login = async (email, password) => {
     try {
