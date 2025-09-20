@@ -130,12 +130,21 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common['Authorization'];
   };
 
+  // Function to update auth state directly (used by OAuth callback)
+  const setAuthState = (userData, userToken) => {
+    setUser(userData);
+    setToken(userToken);
+    localStorage.setItem('token', userToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
+  };
+
   const value = {
     user,
     token,
     login,
     googleLogin,
     logout,
+    setAuthState,
     loading,
   };
 
