@@ -71,6 +71,29 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
+	// Check if user was authenticated via session cookie (no Authorization header)
+	authHeader := c.GetHeader("Authorization")
+	sessionCookie, sessionErr := c.Cookie("session_id")
+	
+	// If no Authorization header but valid session cookie, generate JWT token for frontend compatibility
+	if authHeader == "" && sessionErr == nil && sessionCookie != "" {
+		username, _ := c.Get("username")
+		email, _ := c.Get("email") 
+		role, _ := c.Get("role")
+		
+		jwtToken, err := auth.GenerateToken(user.ID, username.(string), email.(string), role.(string))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+			return
+		}
+		
+		c.JSON(http.StatusOK, gin.H{
+			"user": user,
+			"token": jwtToken,
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
