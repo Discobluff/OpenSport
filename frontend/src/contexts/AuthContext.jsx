@@ -41,6 +41,13 @@ export const AuthProvider = ({ children }) => {
         try {
           const response = await axios.get(`${API_BASE_URL}/profile`);
           setUser(response.data.user);
+          
+          // If the backend returned a token (session-based auth), store it
+          if (response.data.token) {
+            setToken(response.data.token);
+            localStorage.setItem('token', response.data.token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+          }
         } catch (error) {
           // No session cookie, user is not logged in
         }
