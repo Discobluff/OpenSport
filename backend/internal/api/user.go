@@ -16,43 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func RegisterUser(c *gin.Context) {
-	var req models.RegisterRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Check if user already exists
-	collection := database.GetCollection("users")
-	var existingUser models.User
-	err := collection.FindOne(context.TODO(), bson.M{"email": req.Email}).Decode(&existingUser)
-	if err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "User with this email already exists"})
-		return
-	}
-
-	user := models.User{
-		Username:  req.Username,
-		Email:     req.Email,
-		GoogleID:  "", // Empty for traditional registration
-		Role:      "user",
-		Sports:    []primitive.ObjectID{},
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	result, err := collection.InsertOne(context.TODO(), user)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
-		return
-	}
-
-	user.ID = result.InsertedID.(primitive.ObjectID)
-
-	c.JSON(http.StatusCreated, gin.H{"user": user})
-}
-
 func LoginUser(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
