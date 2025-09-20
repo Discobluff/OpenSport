@@ -33,30 +33,48 @@ export const AuthProvider = ({ children }) => {
           const response = await axios.get(`${API_BASE_URL}/profile`);
           setUser(response.data.user);
         } catch (error) {
-          console.error('Failed to get user profile:', error);
-          logout();
+          console.error('Failed to get user profile with JWT token:', error);
+          // JWT token failed, try session cookie without clearing it
+          await trySessionAuth();
         }
       } else {
-        // Check if there's a session cookie by trying to get profile without token
-        try {
-          const response = await axios.get(`${API_BASE_URL}/profile`);
-          setUser(response.data.user);
-          
-          // If the backend returned a token (session-based auth), store it
-          if (response.data.token) {
-            setToken(response.data.token);
-            localStorage.setItem('token', response.data.token);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-          }
-        } catch (error) {
-          // No session cookie, user is not logged in
-        }
+        // No JWT token, try session cookie
+        await trySessionAuth();
       }
       setLoading(false);
     };
 
+    const trySessionAuth = async () => {
+      try {
+        // Temporarily remove Authorization header to force session cookie authentication
+        const authHeader = axios.defaults.headers.common['Authorization'];
+        delete axios.defaults.headers.common['Authorization'];
+        
+        const response = await axios.get(`${API_BASE_URL}/profile`);
+        setUser(response.data.user);
+        
+        // If the backend returned a token (session-based auth), store it
+        if (response.data.token) {
+          setToken(response.data.token);
+          localStorage.setItem('token', response.data.token);
+          axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        } else if (authHeader) {
+          // Restore the auth header if we had one and didn't get a new token
+          axios.defaults.headers.common['Authorization'] = authHeader;
+        }
+      } catch (error) {
+        // No valid session cookie, clear everything and redirect to login
+        console.error('No valid session found:', error);
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        delete axios.defaults.headers.common['Authorization'];
+      }
+    };
+
     initializeAuth();
-  }, [token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Note: Not depending on [token] is intentional to prevent re-runs when token changes
 
   const login = async (email, password) => {
     try {
