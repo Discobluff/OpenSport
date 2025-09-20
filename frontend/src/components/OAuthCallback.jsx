@@ -54,11 +54,11 @@ const OAuthCallback = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
+      <Container>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
           <CircularProgress sx={{ mb: 2 }} />
           <Typography variant="h6">
-            Completing authentication...
+            Authentification en cours...
           </Typography>
         </Paper>
       </Container>
