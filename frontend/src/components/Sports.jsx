@@ -16,7 +16,7 @@ import {
   Chip,
   Alert,
 } from '@mui/material';
-import { Add as AddIcon, Group as GroupIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Group as GroupIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
@@ -26,6 +26,7 @@ const Sports = () => {
   const [userSports, setUserSports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openDialogDelete, setOpenDialogDelete] = useState({open:false, sportId:''});
   const [newSport, setNewSport] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -35,12 +36,21 @@ const Sports = () => {
     fetchUserSports();
   }, []);
 
+  const deleteSport = async (sportId) => {
+    try {
+      await axios.post(`http://localhost:8080/api/sports/${sportId}/delete`);
+      fetchSports();
+    } catch (error) {
+      console.error('Echec de la suppression du sport', error);
+    }
+  };
+
   const fetchSports = async () => {
     try {
       const response = await axios.get('http://localhost:8080/api/sports');
       setSports(response.data.sports || []);
     } catch (error) {
-      console.error('Failed to fetch sports:', error);
+      console.error('Echec de la récupération des sports', error);
     } finally {
       setLoading(false);
     }
@@ -51,7 +61,7 @@ const Sports = () => {
       const response = await axios.get('http://localhost:8080/api/user/sports');
       setUserSports(response.data.sports || []);
     } catch (error) {
-      console.error('Failed to fetch user sports:', error);
+      console.error('Echec de la récupération des sports du membre :', error);
     }
   };
 
@@ -60,19 +70,19 @@ const Sports = () => {
     setSuccess('');
 
     if (!newSport.name.trim()) {
-      setError('Sport name is required');
+      setError('Un nom est requis');
       return;
     }
 
     try {
       await axios.post('http://localhost:8080/api/sports', newSport);
-      setSuccess('Sport created successfully!');
+      setSuccess('Le sport a été crée avec succès');
       setNewSport({ name: '', description: '' });
       setOpenDialog(false);
       fetchSports();
       fetchUserSports();
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to create sport');
+      setError(error.response?.data?.error || 'Création du sport échouée');
     }
   };
 
@@ -100,7 +110,7 @@ const Sports = () => {
   if (loading) {
     return (
       <Container sx={{ mt: 4 }}>
-        <Typography>Loading...</Typography>
+        <Typography>Chargement...</Typography>
       </Container>
     );
   }
@@ -111,13 +121,15 @@ const Sports = () => {
         <Typography variant="h4" component="h1">
           Sports
         </Typography>
+        {(user.role === 'Admin') && (
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setOpenDialog(true)}
         >
-          Create Sport
+          Créer un sport
         </Button>
+        )}
       </Box>
 
       {error && (
@@ -139,14 +151,18 @@ const Sports = () => {
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   {sport.name}
+                {(user.role === 'Admin') && (<DeleteIcon 
+                  style={{float: 'right', cursor: 'pointer' }}
+                  onClick={() => setOpenDialogDelete({open:true,sportId:sport.id})}
+                />)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  {sport.description || 'No description provided'}
+                  {sport.description || 'Pas de description'}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <GroupIcon fontSize="small" />
                   <Typography variant="body2">
-                    {sport.members?.length || 0} members
+                    {sport.members?.length || 0} membre{sport.members.length > 1 ? 's' : ''}
                   </Typography>
                 </Box>
                 {isUserAdminOfSport(sport) && (
@@ -155,10 +171,10 @@ const Sports = () => {
               </CardContent>
               <CardActions>
                 {isUserInSport(sport.id) ? (
-                  <Chip label="Joined" color="success" variant="outlined" />
+                  <Chip label="Rejoint" color="success" variant="outlined" />
                 ) : (
                   <Button size="small" onClick={() => handleJoinSport(sport.id)}>
-                    Join Sport
+                    Rejoindre
                   </Button>
                 )}
               </CardActions>
@@ -170,22 +186,46 @@ const Sports = () => {
       {sports.length === 0 && (
         <Box sx={{ textAlign: 'center', mt: 8 }}>
           <Typography variant="h6" color="text.secondary">
-            No sports available yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Be the first to create a sport!
+            Aucun sport actuellement
           </Typography>
         </Box>
       )}
 
+
+      {/* Creation sport confirmation deletion Dialog */}
+      <Dialog
+        open={openDialogDelete.open}
+        onClose={() => setOpenDialogDelete({open:false,sportId:''})}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir supprimer ce sport ? Cette action est irréversible.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialogDelete({open:false,sportId:''})}>Annuler</Button>
+          <Button
+            onClick={() => {
+              deleteSport(openDialogDelete.sportId);
+              setOpenDialogDelete({open:false,sportId:''});
+            }}
+            variant="contained"
+            color="error"
+          >
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Create Sport Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Create New Sport</DialogTitle>
+        <DialogTitle>Création d'un sport</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Sport Name"
+            label="Nom du sport"
             fullWidth
             variant="outlined"
             value={newSport.name}
@@ -204,9 +244,9 @@ const Sports = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={() => setOpenDialog(false)}>Annuler</Button>
           <Button onClick={handleCreateSport} variant="contained">
-            Create
+            Créer
           </Button>
         </DialogActions>
       </Dialog>

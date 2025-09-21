@@ -41,9 +41,6 @@ func main() {
 	r.GET("/api/auth/google", api.GoogleOAuthLogin)
 	r.GET("/api/auth/google/callback", api.GoogleOAuthCallback)
 	r.POST("/api/auth/logout", api.LogoutUser)
-	r.GET("/api/sports", api.GetSports)
-	r.GET("/api/trainings", api.GetTrainings)
-	// r.GET("/api/users", api.GetUsers)
 
 	// Protected routes for logged users or admin only
 	protected := r.Group("/api")
@@ -58,10 +55,14 @@ func main() {
 		protected.POST("/role", api.ChangeRole)
 		
 		// Sport routes
-		protected.POST("/sports", auth.AdminOnly(), api.CreateSport)
+		protected.GET("/sports", api.GetSports)
 		protected.POST("/sports/:id/join", api.JoinSport)
+		// Admin routes
+		protected.POST("/sports", auth.AdminOnly(), api.CreateSport)
+		protected.POST("/sports/:id/delete", auth.AdminOnly(), api.DeleteSport)
 		
 		// Training routes
+		protected.GET("/trainings", api.GetTrainings)
 		protected.POST("/trainings", api.CreateTraining)
 		protected.POST("/trainings/:id/join", api.JoinTraining)
 	}

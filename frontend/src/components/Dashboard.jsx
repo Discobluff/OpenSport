@@ -42,7 +42,7 @@ const Dashboard = () => {
   if (loading) {
     return (
       <Container sx={{ mt: 4 }}>
-        <Typography>Loading...</Typography>
+        <Typography>Chargement...</Typography>
       </Container>
     );
   }

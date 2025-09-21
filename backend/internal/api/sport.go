@@ -65,6 +65,29 @@ func GetSports(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"sports": sports})
 }
 
+func DeleteSport(c *gin.Context) {
+	sportID := c.Param("id")
+	sportObjID, err := primitive.ObjectIDFromHex(sportID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sport ID"})
+		return
+	}
+
+	collection := database.GetCollection("sports")
+	result, err := collection.DeleteOne(context.TODO(), bson.M{"_id": sportObjID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete sport"})
+		return
+	}
+
+	if result.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Sport not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Sport deleted successfully"})
+}
+
 func JoinSport(c *gin.Context) {
 	sportID := c.Param("id")
 	sportObjID, err := primitive.ObjectIDFromHex(sportID)
