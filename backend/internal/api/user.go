@@ -55,6 +55,25 @@ func LoginUser(c *gin.Context) {
 	})
 }
 
+func GetUsers(c *gin.Context){
+	collection := database.GetCollection("users")
+	var users []models.User
+
+	cursor, err := collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		return
+	}
+	defer cursor.Close(context.TODO())
+
+	if err = cursor.All(context.TODO(), &users); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse users"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"users": users})
+}
+
 func GetProfile(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	objID, err := primitive.ObjectIDFromHex(userID.(string))

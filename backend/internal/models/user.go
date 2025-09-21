@@ -22,12 +22,6 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-type RegisterRequest struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
 type GoogleUserInfo struct {
 	ID      string `json:"id"`
 	Email   string `json:"email"`

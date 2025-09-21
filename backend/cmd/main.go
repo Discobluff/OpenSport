@@ -43,8 +43,9 @@ func main() {
 	r.POST("/api/auth/logout", api.LogoutUser)
 	r.GET("/api/sports", api.GetSports)
 	r.GET("/api/trainings", api.GetTrainings)
+	// r.GET("/api/users", api.GetUsers)
 
-	// Protected routes
+	// Protected routes for logged users or admin only
 	protected := r.Group("/api")
 	protected.Use(auth.JWTAuthMiddleware())
 	{
@@ -52,9 +53,10 @@ func main() {
 		protected.GET("/profile", api.GetProfile)
 		protected.GET("/user/sports", api.GetUserSports)
 		protected.GET("/user/trainings", api.GetUserTrainings)
+		protected.GET("/users", api.GetUsers)
 		
 		// Sport routes
-		protected.POST("/sports", api.CreateSport)
+		protected.POST("/sports", auth.AdminOnly(), api.CreateSport)
 		protected.POST("/sports/:id/join", api.JoinSport)
 		
 		// Training routes

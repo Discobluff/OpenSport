@@ -15,9 +15,10 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Sports', path: '/sports' },
-    { label: 'Trainings', path: '/trainings' },
+    { label: 'Dashboard', path: '/dashboard', admin: false },
+    { label: 'Sports', path: '/sports', admin: false },
+    { label: 'Trainings', path: '/trainings', admin: false },
+    { label: 'Membres', path: '/users', admin: true}
   ];
 
   return (
@@ -31,16 +32,18 @@ const Navbar = () => {
         {user && (
           <Box sx={{ display: 'flex', gap: 2, mr: 2 }}>
             {navItems.map((item) => (
-              <Button
-                key={item.path}
-                color="inherit"
-                onClick={() => navigate(item.path)}
-                sx={{
-                  textDecoration: location.pathname === item.path ? 'underline' : 'none'
-                }}
-              >
-                {item.label}
-              </Button>
+              (!item.admin || user.role === 'admin') && (
+                <Button
+                  key={item.path}
+                  color="inherit"
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    textDecoration: location.pathname === item.path ? 'underline' : 'none'
+                  }}
+                >
+                  {item.label}
+                </Button>
+              )
             ))}
           </Box>
         )}
