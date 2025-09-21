@@ -32,7 +32,7 @@ const Navbar = () => {
         {user && (
           <Box sx={{ display: 'flex', gap: 2, mr: 2 }}>
             {navItems.map((item) => (
-              (!item.admin || user.role === 'admin') && (
+              (!item.admin || user.role === 'Admin') && (
                 <Button
                   key={item.path}
                   color="inherit"

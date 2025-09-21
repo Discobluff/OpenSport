@@ -133,7 +133,7 @@ const Dashboard = () => {
                 <Chip
                   label={user?.role}
                   size="small"
-                  color={user?.role === 'admin' ? 'secondary' : 'default'}
+                  color={user?.role === 'Admin' ? 'secondary' : 'default'}
                 />
               </Typography>
             </CardContent>

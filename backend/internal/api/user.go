@@ -48,7 +48,16 @@ func GetUsers(c *gin.Context){
 	collection := database.GetCollection("users")
 	var users []models.User
 
-	cursor, err := collection.Find(context.TODO(), bson.M{})
+	filter := bson.M{}
+	if role := c.Query("role"); role != "" {
+		filter["role"] = role
+	}
+
+	if name := c.Query("name"); name != "" {
+		filter["username"] = bson.M{"$regex": name, "$options": "i"}
+	}
+
+	cursor, err := collection.Find(context.TODO(), filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
 		return

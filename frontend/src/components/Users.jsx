@@ -2,22 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Box,
-  Chip,
   Alert,
 } from '@mui/material';
-import { Add as AddIcon, Group as GroupIcon } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
 const Users = () => {
@@ -26,14 +14,16 @@ const Users = () => {
   // const [openDialog, setOpenDialog] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [searchName, setSearchName] = useState('');
+  const [searchRole, setSearchRole] = useState('');
 
   useEffect(() => {
     fetchUsers();    
-  }, []);
+  }, [searchName, searchRole]);
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/users');
+      const response = await axios.get(`http://localhost:8080/api/users${searchName || searchRole ? `?` : ''}${searchName ? `name=${searchName}` : ''}${searchName && searchRole ? `&` : ''}${searchRole ? `role=${searchRole}` : ''}`);      
       setUsers(response.data.users || []);
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -59,7 +49,36 @@ const Users = () => {
           Membres
         </Typography>
       </Box>
-
+    <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+      <TextField
+        label="Rechercher par nom"
+        variant="outlined"
+        value={searchName}
+        onChange={(e) => {
+          setSearchName(e.target.value);
+        }}
+        fullWidth
+      />
+      <TextField
+        select
+        label="Filtrer par rôle"
+        value={searchRole}
+        onChange={(e) => {
+          setSearchRole(e.target.value);
+        }}
+        slotProps={{
+          select: {
+            native: true,
+          },
+        }}
+        fullWidth
+      >
+        <option value=""></option>
+        <option value="Non licencié">Non licencié</option>
+        <option value="Licencié">Licencié</option>
+        <option value="Admin">Admin</option>
+      </TextField>
+    </Box>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}
