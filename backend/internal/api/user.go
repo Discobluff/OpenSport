@@ -31,17 +31,6 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	// Check password
-	// Since we're moving to OAuth, this function might not be used
-	// but keeping it for backward compatibility
-	if user.GoogleID != "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Please use Google OAuth to login"})
-		return
-	}
-	
-	// For users created before OAuth migration, we might not have password
-	c.JSON(http.StatusUnauthorized, gin.H{"error": "Please use Google OAuth to login"})
-
 	// Generate JWT token
 	token, err := auth.GenerateToken(user.ID, user.Username, user.Email, user.Role)
 	if err != nil {
