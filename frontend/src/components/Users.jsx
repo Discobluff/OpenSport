@@ -85,9 +85,29 @@ const Users = () => {
             }}
           >
             <Typography variant="h6">{user.username}</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {user.role}
-            </Typography>
+            <select
+              value={user.role}
+              onChange={(e) => {
+                const updatedRole = e.target.value;
+                user.role = updatedRole;
+                axios
+                  .post('http://localhost:8080/api/role', {
+                    user_id: user.id,
+                    role: updatedRole,
+                  })
+                  .then(() => {
+                    setSuccess(`${user.username} est passé ${updatedRole}`);
+                  })
+                  .catch((error) => {
+                    console.error('Erreur pour changer de role :', error);
+                    setError(`Echec de changement de rôle pour ${user.username}`);
+                  });
+              }}
+            >
+              <option value="Non licencié">Non licencié</option>
+              <option value="Licencié">Licencié</option>
+              <option value="Admin">Admin</option>
+            </select>
           </Box>
         ))}
       </Box>

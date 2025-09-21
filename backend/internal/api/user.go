@@ -63,6 +63,34 @@ func GetUsers(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"users": users})
 }
 
+func ChangeRole(c *gin.Context){
+	var req struct {
+		UserID string `json:"user_id"`
+		Role   string `json:"role"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	objID, err := primitive.ObjectIDFromHex(req.UserID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	collection := database.GetCollection("users")
+	update := bson.M{"$set": bson.M{"role": req.Role, "updated_at": time.Now()}}
+	_, err = collection.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user role"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User role updated successfully"})
+}
+
 func GetProfile(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	objID, err := primitive.ObjectIDFromHex(userID.(string))
@@ -187,7 +215,7 @@ func GoogleOAuthCallback(c *gin.Context) {
 			Email:     email,
 			GoogleID:  googleID,
 			Picture:   picture,
-			Role:      "user",
+			Role:      "Non licencié",
 			Sports:    []primitive.ObjectID{},
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

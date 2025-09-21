@@ -53,7 +53,9 @@ func main() {
 		protected.GET("/profile", api.GetProfile)
 		protected.GET("/user/sports", api.GetUserSports)
 		protected.GET("/user/trainings", api.GetUserTrainings)
+		// Admin routes
 		protected.GET("/users", api.GetUsers)
+		protected.POST("/role", api.ChangeRole)
 		
 		// Sport routes
 		protected.POST("/sports", auth.AdminOnly(), api.CreateSport)
