@@ -62,7 +62,19 @@ func AdminOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("role")
 		if !exists || role != "Admin" {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Admin access required"})
+			c.JSON(http.StatusForbidden, gin.H{"error": "Accès Admin requis"})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+func LicensedOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists || (role != "Licencié" && role != "Admin"){
+			c.JSON(http.StatusForbidden, gin.H{"error": "Accès licencié requis"})
 			c.Abort()
 			return
 		}

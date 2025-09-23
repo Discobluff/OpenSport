@@ -10,6 +10,7 @@ import Sports from './components/Sports';
 import Trainings from './components/Trainings';
 import OAuthCallback from './components/OAuthCallback';
 import Users from './components/Users'
+import Sport from './components/Sport'
 
 const theme = createTheme({
   palette: {
@@ -49,6 +50,11 @@ function App() {
                     <Route path="/sports" element={
                       <ProtectedRoute>
                         <Sports />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/sport/:id" element={
+                      <ProtectedRoute>
+                        <Sport />
                       </ProtectedRoute>
                     } />
                     <Route path="/users" element={

@@ -19,6 +19,7 @@ import {
 import { Add as AddIcon, Delete as DeleteIcon, Group as GroupIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Sports = () => {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ const Sports = () => {
   const [newSport, setNewSport] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSports();
@@ -92,7 +94,7 @@ const Sports = () => {
 
     try {
       await axios.post(`http://localhost:8080/api/sports/${sportId}/join`);
-      setSuccess('Successfully joined the sport!');
+      setSuccess('Vous avez rejoint le sport avec succès !');
       fetchUserSports();
     } catch (error) {
       setError(error.response?.data?.error || 'Failed to join sport');
@@ -146,7 +148,7 @@ const Sports = () => {
 
       <Grid container spacing={3}>
         {sports.map((sport) => (
-          <Grid item xs={12} sm={6} md={4} key={sport.id}>
+          <Grid item xs={12} sm={6} md={4} key={sport.id} onClick={() => navigate(`/sport/${sport.id}`)}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -165,17 +167,10 @@ const Sports = () => {
                     {sport.members?.length || 0} membre{sport.members.length > 1 ? 's' : ''}
                   </Typography>
                 </Box>
-                {isUserAdminOfSport(sport) && (
-                  <Chip label="Admin" color="secondary" size="small" />
-                )}
               </CardContent>
               <CardActions>
-                {isUserInSport(sport.id) ? (
+                {isUserInSport(sport.id) && (
                   <Chip label="Rejoint" color="success" variant="outlined" />
-                ) : (
-                  <Button size="small" onClick={() => handleJoinSport(sport.id)}>
-                    Rejoindre
-                  </Button>
                 )}
               </CardActions>
             </Card>

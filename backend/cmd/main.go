@@ -56,7 +56,10 @@ func main() {
 		
 		// Sport routes
 		protected.GET("/sports", api.GetSports)
-		protected.POST("/sports/:id/join", api.JoinSport)
+		// Licensed
+		protected.POST("/sports/:id/join", auth.LicensedOnly(), api.JoinSport)
+		// Member of the sport
+		protected.GET("/sport/:id", auth.LicensedOnly(), api.GetSport)
 		// Admin routes
 		protected.POST("/sports", auth.AdminOnly(), api.CreateSport)
 		protected.POST("/sports/:id/delete", auth.AdminOnly(), api.DeleteSport)

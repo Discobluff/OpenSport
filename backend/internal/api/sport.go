@@ -47,6 +47,40 @@ func CreateSport(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"sport": sport})
 }
 
+func GetSport(c *gin.Context) {
+	sportID := c.Param("id")
+	sportObjID, err := primitive.ObjectIDFromHex(sportID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sport ID"})
+		return
+	}	
+	collection := database.GetCollection("sports")
+	var sport models.Sport
+	err = collection.FindOne(context.TODO(), bson.M{"_id": sportObjID}).Decode(&sport)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Sport not found"})
+		return
+	}
+	memberCollection := database.GetCollection("users")
+	var members []map[string]interface{}
+	for _, memberID := range sport.Members {
+		var member struct {
+			ID   primitive.ObjectID `bson:"_id"`
+			Name string             `bson:"username"`
+		}
+		err := memberCollection.FindOne(context.TODO(), bson.M{"_id": memberID}).Decode(&member)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch member details"})
+			return
+		}
+		members = append(members, map[string]interface{}{
+			"id":   member.ID.Hex(),
+			"name": member.Name,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{"sport": sport, "members":members})
+}
+
 func GetSports(c *gin.Context) {
 	collection := database.GetCollection("sports")
 	cursor, err := collection.Find(context.TODO(), bson.M{})
