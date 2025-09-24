@@ -18,7 +18,7 @@ const Navbar = () => {
     { label: 'Dashboard', path: '/dashboard', admin: false },
     { label: 'Sports', path: '/sports', admin: false },
     { label: 'Trainings', path: '/trainings', admin: false },
-    { label: 'Membres', path: '/users', admin: true}
+    { label: 'Membres', path: '/users', admin: true }
   ];
 
   return (
@@ -28,7 +28,7 @@ const Navbar = () => {
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           BDS TELECOM Nancy
         </Typography>
-        
+
         {user && (
           <Box sx={{ display: 'flex', gap: 2, mr: 2 }}>
             {navItems.map((item) => (

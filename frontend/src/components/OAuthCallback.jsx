@@ -36,7 +36,7 @@ const OAuthCallback = () => {
         });
 
         const { token, user } = response.data;
-        
+
         // Update AuthContext state immediately with the user data
         setAuthState(user, token);
 

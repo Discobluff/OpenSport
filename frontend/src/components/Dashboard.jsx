@@ -24,7 +24,7 @@ const Dashboard = () => {
           axios.get('http://localhost:8080/api/user/sports'),
           axios.get('http://localhost:8080/api/user/trainings'),
         ]);
-        
+
         setUserSports(sportsResponse.data.sports || []);
         setUserTrainings(trainingsResponse.data.trainings || []);
       } catch (error) {
@@ -52,7 +52,7 @@ const Dashboard = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Welcome, {user?.username}!
       </Typography>
-      
+
       <Grid container spacing={4}>
         {/* My Sports */}
         <Grid>
@@ -130,11 +130,6 @@ const Dashboard = () => {
               </Typography>
               <Typography variant="body2">
                 <strong>Statut :</strong> {user?.role}
-                {/* <Chip
-                  label={user?.role}
-                  size="small"
-                  color={user?.role === 'Admin' ? 'secondary' : 'default'}
-                /> */}
               </Typography>
             </CardContent>
           </Card>

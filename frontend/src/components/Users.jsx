@@ -18,12 +18,12 @@ const Users = () => {
   const [searchRole, setSearchRole] = useState('');
 
   useEffect(() => {
-    fetchUsers();    
+    fetchUsers();
   }, [searchName, searchRole]);
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/users${searchName || searchRole ? `?` : ''}${searchName ? `name=${searchName}` : ''}${searchName && searchRole ? `&` : ''}${searchRole ? `role=${searchRole}` : ''}`);      
+      const response = await axios.get(`http://localhost:8080/api/users${searchName || searchRole ? `?` : ''}${searchName ? `name=${searchName}` : ''}${searchName && searchRole ? `&` : ''}${searchRole ? `role=${searchRole}` : ''}`);
       setUsers(response.data.users || []);
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -33,14 +33,14 @@ const Users = () => {
   };
 
 
-    if (loading) {
-      return (
-        <Container sx={{ mt: 4 }}>
-          <Typography>Chargement...</Typography>
-        </Container>
-      );
-    }
-  
+  if (loading) {
+    return (
+      <Container sx={{ mt: 4 }}>
+        <Typography>Chargement...</Typography>
+      </Container>
+    );
+  }
+
 
   return (
     <Container sx={{ mt: 4 }}>
@@ -49,36 +49,36 @@ const Users = () => {
           Membres
         </Typography>
       </Box>
-    <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-      <TextField
-        label="Rechercher par nom"
-        variant="outlined"
-        value={searchName}
-        onChange={(e) => {
-          setSearchName(e.target.value);
-        }}
-        fullWidth
-      />
-      <TextField
-        select
-        label="Filtrer par rôle"
-        value={searchRole}
-        onChange={(e) => {
-          setSearchRole(e.target.value);
-        }}
-        slotProps={{
-          select: {
-            native: true,
-          },
-        }}
-        fullWidth
-      >
-        <option value=""></option>
-        <option value="Non licencié">Non licencié</option>
-        <option value="Licencié">Licencié</option>
-        <option value="Admin">Admin</option>
-      </TextField>
-    </Box>
+      <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+        <TextField
+          label="Rechercher par nom"
+          variant="outlined"
+          value={searchName}
+          onChange={(e) => {
+            setSearchName(e.target.value);
+          }}
+          fullWidth
+        />
+        <TextField
+          select
+          label="Filtrer par rôle"
+          value={searchRole}
+          onChange={(e) => {
+            setSearchRole(e.target.value);
+          }}
+          slotProps={{
+            select: {
+              native: true,
+            },
+          }}
+          fullWidth
+        >
+          <option value=""></option>
+          <option value="Non licencié">Non licencié</option>
+          <option value="Licencié">Licencié</option>
+          <option value="Admin">Admin</option>
+        </TextField>
+      </Box>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}

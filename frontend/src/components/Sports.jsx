@@ -27,7 +27,7 @@ const Sports = () => {
   const [userSports, setUserSports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
-  const [openDialogDelete, setOpenDialogDelete] = useState({open:false, sportId:''});
+  const [openDialogDelete, setOpenDialogDelete] = useState({ open: false, sportId: '' });
   const [newSport, setNewSport] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -124,13 +124,13 @@ const Sports = () => {
           Sports
         </Typography>
         {(user.role === 'Admin') && (
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenDialog(true)}
-        >
-          Créer un sport
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenDialog(true)}
+          >
+            Créer un sport
+          </Button>
         )}
       </Box>
 
@@ -153,10 +153,10 @@ const Sports = () => {
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   {sport.name}
-                {(user.role === 'Admin') && (<DeleteIcon 
-                  style={{float: 'right', cursor: 'pointer' }}
-                  onClick={() => setOpenDialogDelete({open:true,sportId:sport.id})}
-                />)}
+                  {(user.role === 'Admin') && (<DeleteIcon
+                    style={{ float: 'right', cursor: 'pointer' }}
+                    onClick={() => setOpenDialogDelete({ open: true, sportId: sport.id })}
+                  />)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   {sport.description || 'Pas de description'}
@@ -190,7 +190,7 @@ const Sports = () => {
       {/* Creation sport confirmation deletion Dialog */}
       <Dialog
         open={openDialogDelete.open}
-        onClose={() => setOpenDialogDelete({open:false,sportId:''})}
+        onClose={() => setOpenDialogDelete({ open: false, sportId: '' })}
         maxWidth="xs"
         fullWidth
       >
@@ -199,11 +199,11 @@ const Sports = () => {
           <Typography>Êtes-vous sûr de vouloir supprimer ce sport ? Cette action est irréversible.</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialogDelete({open:false,sportId:''})}>Annuler</Button>
+          <Button onClick={() => setOpenDialogDelete({ open: false, sportId: '' })}>Annuler</Button>
           <Button
             onClick={() => {
               deleteSport(openDialogDelete.sportId);
-              setOpenDialogDelete({open:false,sportId:''});
+              setOpenDialogDelete({ open: false, sportId: '' });
             }}
             variant="contained"
             color="error"

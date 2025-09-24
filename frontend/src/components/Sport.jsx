@@ -24,12 +24,12 @@ import { useParams } from 'react-router-dom';
 const Sport = () => {
   const { user } = useAuth();
   const [sport, setSport] = useState([])
-  const [members, setMembers] = useState([]);  
+  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
-  const [openDialogDelete, setOpenDialogDelete] = useState({open:false, sportId:''});  
+  const [openDialogDelete, setOpenDialogDelete] = useState({ open: false, sportId: '' });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');  
+  const [success, setSuccess] = useState('');
   const { id } = useParams();
   useEffect(() => {
     fetchSport();
@@ -70,7 +70,7 @@ const Sport = () => {
     }
   };
 
-  const isUserInSport = () => {    
+  const isUserInSport = () => {
     return sport.members.includes(user.id);
   };
 
@@ -88,21 +88,25 @@ const Sport = () => {
 
   return (
     <Container sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">
           {sport.name}
         </Typography>
         {!isUserInSport() && (
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleJoinSport()}
-        >
-          Rejoindre le sport
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleJoinSport()}
+          >
+            Rejoindre le sport
+          </Button>
         )}
       </ Box>
-      
+
+      <Typography component="h2" color="#595959" sx={{ pb: 3 }}>
+        {sport.description}
+      </Typography>
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}
@@ -121,21 +125,21 @@ const Sport = () => {
         </Typography>
       </ Box>
       <Box>
-              {members.map((member) => (
-                <Box
-                  key={member.id}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    p: 2,
-                    borderBottom: '1px solid #ccc',
-                  }}
-                >
-                  <Typography variant="h6">{member.name}</Typography>
-                </Box>
-              ))}
-            </Box>
+        {members.map((member) => (
+          <Box
+            key={member.id}
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              p: 1,
+              borderBottom: '1px solid #ccc',
+            }}
+          >
+            <Typography variant="h6">{member.name}</Typography>
+          </Box>
+        ))}
+      </Box>
 
 
 
