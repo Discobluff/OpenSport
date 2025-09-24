@@ -38,7 +38,7 @@ const Sport = () => {
 
   const deleteSport = async (sportId) => {
     try {
-      await axios.post(`http://localhost:8080/api/sports/${sportId}/delete`);
+      await axios.post(`http://localhost:8080/api/sport/${sportId}/delete`);
       fetchSport();
     } catch (error) {
       console.error('Echec de la suppression du sport', error);
@@ -62,7 +62,7 @@ const Sport = () => {
     setSuccess('');
 
     try {
-      await axios.post(`http://localhost:8080/api/sports/${sport.id}/join`);
+      await axios.post(`http://localhost:8080/api/sport/${sport.id}/join`);
       setSuccess('Vous avez rejoint le sport avec succès !');
       fetchSport();
     } catch (error) {

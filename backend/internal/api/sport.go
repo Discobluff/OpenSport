@@ -108,16 +108,20 @@ func DeleteSport(c *gin.Context) {
 	}
 
 	collection := database.GetCollection("sports")
-	result, err := collection.DeleteOne(context.TODO(), bson.M{"_id": sportObjID})
+	resultDelete, err := collection.DeleteOne(context.TODO(), bson.M{"_id": sportObjID})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete sport"})
 		return
 	}
 
-	if result.DeletedCount == 0 {
+	if resultDelete.DeletedCount == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Sport not found"})
 		return
 	}
+
+	// Delete the sport in the list of the players who joined it
+	collection = database.GetCollection("users")
+	collection.UpdateMany(context.TODO(), bson.M{"sports": sportObjID}, bson.M{"$pull": bson.M{"sports": sportObjID}})
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sport deleted successfully"})
 }

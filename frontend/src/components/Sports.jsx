@@ -40,7 +40,7 @@ const Sports = () => {
 
   const deleteSport = async (sportId) => {
     try {
-      await axios.post(`http://localhost:8080/api/sports/${sportId}/delete`);
+      await axios.post(`http://localhost:8080/api/sport/${sportId}/delete`);
       fetchSports();
     } catch (error) {
       console.error('Echec de la suppression du sport', error);
@@ -77,7 +77,8 @@ const Sports = () => {
     }
 
     try {
-      await axios.post('http://localhost:8080/api/sports', newSport);
+      const response = await axios.post('http://localhost:8080/api/sports', newSport);
+      handleJoinSport(response.data.sport.id);
       setSuccess('Le sport a été crée avec succès');
       setNewSport({ name: '', description: '' });
       setOpenDialog(false);
@@ -93,7 +94,7 @@ const Sports = () => {
     setSuccess('');
 
     try {
-      await axios.post(`http://localhost:8080/api/sports/${sportId}/join`);
+      await axios.post(`http://localhost:8080/api/sport/${sportId}/join`);
       setSuccess('Vous avez rejoint le sport avec succès !');
       fetchUserSports();
     } catch (error) {
@@ -148,14 +149,17 @@ const Sports = () => {
 
       <Grid container spacing={3}>
         {sports.map((sport) => (
-          <Grid key={sport.id} onClick={() => navigate(`/sport/${sport.id}`)}>
+          <Grid key={sport.id}>
             <Card>
-              <CardContent>
+              <CardContent onClick={() => navigate(`/sport/${sport.id}`)} style={{ cursor: 'pointer' }}>
                 <Typography variant="h6" gutterBottom>
                   {sport.name}
                   {(user.role === 'Admin') && (<DeleteIcon
                     style={{ float: 'right', cursor: 'pointer' }}
-                    onClick={() => setOpenDialogDelete({ open: true, sportId: sport.id })}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent the card click event
+                      setOpenDialogDelete({ open: true, sportId: sport.id });
+                    }}
                   />)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -187,7 +191,7 @@ const Sports = () => {
       )}
 
 
-      {/* Creation sport confirmation deletion Dialog */}
+      {/* Sport confirmation deletion Dialog */}
       <Dialog
         open={openDialogDelete.open}
         onClose={() => setOpenDialogDelete({ open: false, sportId: '' })}
