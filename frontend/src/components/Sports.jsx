@@ -148,7 +148,7 @@ const Sports = () => {
 
       <Grid container spacing={3}>
         {sports.map((sport) => (
-          <Grid item xs={12} sm={6} md={4} key={sport.id} onClick={() => navigate(`/sport/${sport.id}`)}>
+          <Grid key={sport.id} onClick={() => navigate(`/sport/${sport.id}`)}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>

@@ -55,7 +55,7 @@ const Dashboard = () => {
       
       <Grid container spacing={4}>
         {/* My Sports */}
-        <Grid item xs={12} md={6}>
+        <Grid>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -82,7 +82,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* My Trainings */}
-        <Grid item xs={12} md={6}>
+        <Grid>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -116,25 +116,25 @@ const Dashboard = () => {
         </Grid>
 
         {/* User Info */}
-        <Grid item xs={12}>
+        <Grid>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Account Information
+                Informations
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Username:</strong> {user?.username}
+                <strong>Nom :</strong> {user?.username}
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Email:</strong> {user?.email}
+                <strong>Email :</strong> {user?.email}
               </Typography>
               <Typography variant="body2">
-                <strong>Role:</strong>{' '}
-                <Chip
+                <strong>Statut :</strong> {user?.role}
+                {/* <Chip
                   label={user?.role}
                   size="small"
                   color={user?.role === 'Admin' ? 'secondary' : 'default'}
-                />
+                /> */}
               </Typography>
             </CardContent>
           </Card>
