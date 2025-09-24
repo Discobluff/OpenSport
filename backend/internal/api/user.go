@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func LoginUser(c *gin.Context) {
@@ -57,7 +58,7 @@ func GetUsers(c *gin.Context){
 		filter["username"] = bson.M{"$regex": name, "$options": "i"}
 	}
 
-	cursor, err := collection.Find(context.TODO(), filter)
+	cursor, err := collection.Find(context.TODO(), filter, options.Find().SetSort(bson.M{"username": 1}))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
 		return
@@ -72,6 +73,39 @@ func GetUsers(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"users": users})
 }
 
+func DeleteUser(c *gin.Context){
+	userID := c.Param("id")
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	requesterID, _ := c.Get("user_id")
+	if requesterID == userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You cannot delete yourself"})
+		return
+	}
+
+	collection := database.GetCollection("users")
+	resultDelete, err := collection.DeleteOne(context.TODO(), bson.M{"_id": userObjID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		return
+	}
+
+	if resultDelete.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Delete the user of the list of members of the sports he joined
+	collection = database.GetCollection("sports")
+	collection.UpdateMany(context.TODO(), bson.M{"members": userObjID}, bson.M{"$pull": bson.M{"members": userObjID}})
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
 func ChangeRole(c *gin.Context){
 	var req struct {
 		UserID string `json:"user_id"`
@@ -80,6 +114,12 @@ func ChangeRole(c *gin.Context){
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	requesterID, _ := c.Get("user_id")
+	if requesterID == req.UserID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You cannot change your own role"})
 		return
 	}
 

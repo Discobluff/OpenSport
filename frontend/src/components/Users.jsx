@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Button,
   Container,
   Typography,
   TextField,
   Box,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const [openDialog, setOpenDialog] = useState(false);
+  const [openDialogDelete, setOpenDialogDelete] = useState({ open: false, name: '', userId: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [searchName, setSearchName] = useState('');
@@ -32,6 +38,18 @@ const Users = () => {
     }
   };
 
+  const deleteUser = async () =>{
+    try {
+      await axios.post(`http://localhost:8080/api/user/${openDialogDelete.userId}/delete`);
+      setSuccess('Membre supprimé');
+      fetchUsers();
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      setError('Suppression échouée');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -104,32 +122,66 @@ const Users = () => {
             }}
           >
             <Typography variant="h6">{user.username}</Typography>
-            <select
-              value={user.role}
-              onChange={(e) => {
-                const updatedRole = e.target.value;
-                user.role = updatedRole;
-                axios
-                  .post('http://localhost:8080/api/role', {
-                    user_id: user.id,
-                    role: updatedRole,
-                  })
-                  .then(() => {
-                    setSuccess(`${user.username} est passé ${updatedRole}`);
-                  })
-                  .catch((error) => {
-                    console.error('Erreur pour changer de role :', error);
-                    setError(`Echec de changement de rôle pour ${user.username}`);
-                  });
-              }}
-            >
-              <option value="Non licencié">Non licencié</option>
-              <option value="Licencié">Licencié</option>
-              <option value="Admin">Admin</option>
-            </select>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <select
+                value={user.role}
+                onChange={(e) => {
+                  const updatedRole = e.target.value;
+                  axios
+                    .post('http://localhost:8080/api/role', {
+                      user_id: user.id,
+                      role: updatedRole,
+                    })
+                    .then(() => {
+                      user.role = updatedRole;
+                      setSuccess(`${user.username} est passé ${updatedRole}`);
+                    })
+                    .catch((error) => {
+                      console.error('Erreur pour changer de role :', error);
+                      setError(`Echec de changement de rôle pour ${user.username}`);
+                    });
+                }}
+              >
+                <option value="Non licencié">Non licencié</option>
+                <option value="Licencié">Licencié</option>
+                <option value="Admin">Admin</option>
+              </select>
+              <DeleteIcon
+                onClick={() => setOpenDialogDelete({open:true, name:user.username, userId:user.id})}
+                sx={{ cursor: 'pointer' }}
+              />
+            </Box>
           </Box>
         ))}
       </Box>
+
+      {/* User confirmation deletion Dialog */}
+      <Dialog
+        open={openDialogDelete.open}
+        onClose={() => setOpenDialogDelete({ open: false, name: '', userId: '' })}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir supprimer {openDialogDelete.name} de la liste des membres ? Cette action est irréversible.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialogDelete({ open: false, name: '', userId: '' })}>Annuler</Button>
+          <Button
+            onClick={() => {
+              deleteUser(openDialogDelete.userId);
+              setOpenDialogDelete({ open: false, name: '', userId: ''});
+            }}
+            variant="contained"
+            color="error"
+          >
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
     </Container>
   );
 };
