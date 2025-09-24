@@ -10,8 +10,7 @@ type User struct {
 	Username string             `bson:"username" json:"username"`
 	Email    string             `bson:"email" json:"email"`
 	GoogleID string             `bson:"google_id" json:"google_id"`
-	Picture  string             `bson:"picture" json:"picture"`
-	Role     string             `bson:"role" json:"role"` // "user" or "admin"
+	Role     string             `bson:"role" json:"role"` // "Non licencié" or "Licencié" or "Admin"
 	Sports   []primitive.ObjectID `bson:"sports" json:"sports"`
 	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt time.Time          `bson:"updated_at" json:"updated_at"`
