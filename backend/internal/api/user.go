@@ -245,7 +245,6 @@ func GoogleOAuthCallback(c *gin.Context) {
 	}
 	
 	name, _ := userInfo["name"].(string)
-	picture, _ := userInfo["picture"].(string)
 	
 	// Check if user exists
 	collection := database.GetCollection("users")
@@ -263,7 +262,6 @@ func GoogleOAuthCallback(c *gin.Context) {
 			Username:  name,
 			Email:     email,
 			GoogleID:  googleID,
-			Picture:   picture,
 			Role:      "Non licencié",
 			Sports:    []primitive.ObjectID{},
 			CreatedAt: time.Now(),
@@ -280,7 +278,6 @@ func GoogleOAuthCallback(c *gin.Context) {
 	} else {
 		// User exists, update their info
 		user.Username = name
-		user.Picture = picture
 		user.UpdatedAt = time.Now()
 		
 		_, err = collection.UpdateOne(
@@ -288,7 +285,6 @@ func GoogleOAuthCallback(c *gin.Context) {
 			bson.M{"_id": user.ID},
 			bson.M{"$set": bson.M{
 				"username":   user.Username,
-				"picture":    user.Picture,
 				"updated_at": user.UpdatedAt,
 			}},
 		)
