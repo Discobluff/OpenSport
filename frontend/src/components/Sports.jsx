@@ -151,7 +151,10 @@ const Sports = () => {
         {sports.map((sport) => (
           <Grid key={sport.id}>
             <Card>
-              <CardContent onClick={() => navigate(`/sport/${sport.id}`)} style={{ cursor: 'pointer' }}>
+              <CardContent 
+                onClick={(user.role !== "Non licencié") ? () => navigate(`/sport/${sport.id}`) : () => setError("Vous devez être licencié pour accéder aux sports. Si vous l'êtes, contactez un membre du bureau")} 
+                style={{ cursor: 'pointer' }}
+              >
                 <Typography variant="h6" gutterBottom>
                   {sport.name}
                   {(user.role === 'Admin') && (<DeleteIcon
