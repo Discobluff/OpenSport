@@ -99,6 +99,35 @@ func GetSports(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"sports": sports})
 }
 
+func EditSport(c *gin.Context) {
+	var req struct {
+		Name string `json:"name"`
+		Description   string `json:"description"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}	
+
+	sportID := c.Param("id")
+	sportObjID, err := primitive.ObjectIDFromHex(sportID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sport ID"})
+		return
+	}
+	
+	collection := database.GetCollection("sports")
+	update := bson.M{"$set": bson.M{"name": req.Name, "description": req.Description, "updated_at": time.Now()}}
+	_, err = collection.UpdateOne(context.TODO(), bson.M{"_id": sportObjID}, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to edit sport"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Sport edited successfully"})
+}
+
 func DeleteSport(c *gin.Context) {
 	sportID := c.Param("id")
 	sportObjID, err := primitive.ObjectIDFromHex(sportID)

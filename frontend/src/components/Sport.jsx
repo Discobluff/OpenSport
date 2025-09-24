@@ -16,7 +16,7 @@ import {
   Chip,
   Alert,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Group as GroupIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Group as GroupIcon, Edit as EditIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
@@ -26,8 +26,8 @@ const Sport = () => {
   const [sport, setSport] = useState([])
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openDialogDelete, setOpenDialogDelete] = useState({ open: false, sportId: '' });
+  const [dialogEdit, setDialogEdit] = useState({ open: false, name: '', description: '' });
+  // const [openDialogDelete, setOpenDialogDelete] = useState({ open: false, sportId: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const { id } = useParams();
@@ -42,6 +42,15 @@ const Sport = () => {
       fetchSport();
     } catch (error) {
       console.error('Echec de la suppression du sport', error);
+    }
+  };
+
+  const editSport = async (sportId) => {
+    try {
+      await axios.post(`http://localhost:8080/api/sport/${sport.id}/edit`,{name:dialogEdit.name, description:dialogEdit.description});
+      fetchSport();
+    } catch (error) {
+      console.error("Echec de l'édition du sport", error);
     }
   };
 
@@ -88,23 +97,27 @@ const Sport = () => {
 
   return (
     <Container sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">
           {sport.name}
         </Typography>
+        {(user.role === "Admin") && (
+          <EditIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogEdit({ open: true, id: sport.id, name: sport.name, description: sport.description })} />
+        )}
         {!isUserInSport() && (
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleJoinSport()}
+            sx={{ ml: 2 }}
           >
             Rejoindre le sport
           </Button>
         )}
       </ Box>
 
-      <Typography component="h2" color="#595959" sx={{ pb: 3 }}>
-        {sport.description}
+      <Typography component="h2" color="#595959" sx={{ mb: 2 }}>
+        {sport.description || "Pas de description"}
       </Typography>
 
       {error && (
@@ -119,7 +132,7 @@ const Sport = () => {
         </Alert>
       )}
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
         <Typography variant="h5" component="h1">
           Membres
         </Typography>
@@ -141,7 +154,38 @@ const Sport = () => {
         ))}
       </Box>
 
-
+        {/* Sport edition dialog*/}
+      <Dialog open={dialogEdit.open} onClose={() => setDialogEdit({open:false, name:dialogEdit.name, description:dialogEdit.description})} maxWidth="sm" fullWidth>
+        <DialogTitle>Edition</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nom du sport"
+            fullWidth
+            variant="outlined"
+            value={dialogEdit.name}
+            onChange={(e) => setDialogEdit({open:true, name:e.target.value, description:dialogEdit.description})}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Description"
+            fullWidth
+            multiline
+            rows={3}
+            variant="outlined"
+            value={dialogEdit.description}
+            onChange={(e) => setDialogEdit({open:true, name:dialogEdit.name, description:e.target.value})}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogEdit({open:false, name:dialogEdit.name, description:dialogEdit.description})}>Annuler</Button>
+          <Button onClick={() => {editSport();setDialogEdit({open:false, name:dialogEdit.description, description:dialogEdit.description})}} variant="contained">
+            Editer
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </Container>
   );
