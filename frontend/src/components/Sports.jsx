@@ -16,7 +16,7 @@ import {
   Chip,
   Alert,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Group as GroupIcon } from '@mui/icons-material';
+import { Add as AddIcon, Group as GroupIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -27,7 +27,6 @@ const Sports = () => {
   const [userSports, setUserSports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
-  const [openDialogDelete, setOpenDialogDelete] = useState({ open: false, sportId: '' });
   const [newSport, setNewSport] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -37,15 +36,6 @@ const Sports = () => {
     fetchSports();
     fetchUserSports();
   }, []);
-
-  const deleteSport = async (sportId) => {
-    try {
-      await axios.post(`http://localhost:8080/api/sport/${sportId}/delete`);
-      fetchSports();
-    } catch (error) {
-      console.error('Echec de la suppression du sport', error);
-    }
-  };
 
   const fetchSports = async () => {
     try {
@@ -157,13 +147,6 @@ const Sports = () => {
               >
                 <Typography variant="h6" gutterBottom>
                   {sport.name}
-                  {(user.role === 'Admin') && (<DeleteIcon
-                    style={{ float: 'right', cursor: 'pointer' }}
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent the card click event
-                      setOpenDialogDelete({ open: true, sportId: sport.id });
-                    }}
-                  />)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   {sport.description || 'Pas de description'}
@@ -192,33 +175,6 @@ const Sports = () => {
           </Typography>
         </Box>
       )}
-
-
-      {/* Sport confirmation deletion Dialog */}
-      <Dialog
-        open={openDialogDelete.open}
-        onClose={() => setOpenDialogDelete({ open: false, sportId: '' })}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>Confirmer la suppression</DialogTitle>
-        <DialogContent>
-          <Typography>Êtes-vous sûr de vouloir supprimer ce sport ? Cette action est irréversible.</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialogDelete({ open: false, sportId: '' })}>Annuler</Button>
-          <Button
-            onClick={() => {
-              deleteSport(openDialogDelete.sportId);
-              setOpenDialogDelete({ open: false, sportId: '' });
-            }}
-            variant="contained"
-            color="error"
-          >
-            Supprimer
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Create Sport Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>

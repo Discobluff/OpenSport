@@ -19,15 +19,16 @@ import {
 import { Add as AddIcon, Delete as DeleteIcon, Group as GroupIcon, Edit as EditIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const Sport = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [sport, setSport] = useState([])
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogEdit, setDialogEdit] = useState({ open: false, name: '', description: '' });
-  // const [openDialogDelete, setOpenDialogDelete] = useState({ open: false, sportId: '' });
+  const [dialogDelete, setDialogDelete] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const { id } = useParams();
@@ -36,18 +37,18 @@ const Sport = () => {
 
   }, []);
 
-  const deleteSport = async (sportId) => {
+  const deleteSport = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/sport/${sportId}/delete`);
-      fetchSport();
+      await axios.post(`http://localhost:8080/api/sport/${sport.id}/delete`);
+      navigate("/sports");
     } catch (error) {
       console.error('Echec de la suppression du sport', error);
     }
   };
 
-  const editSport = async (sportId) => {
+  const editSport = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/sport/${sport.id}/edit`,{name:dialogEdit.name, description:dialogEdit.description});
+      await axios.post(`http://localhost:8080/api/sport/${sport.id}/edit`, { name: dialogEdit.name, description: dialogEdit.description });
       fetchSport();
     } catch (error) {
       console.error("Echec de l'édition du sport", error);
@@ -104,6 +105,9 @@ const Sport = () => {
         {(user.role === "Admin") && (
           <EditIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogEdit({ open: true, id: sport.id, name: sport.name, description: sport.description })} />
         )}
+        {(user.role === "Admin") && (
+          <DeleteIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogDelete(true)} />
+        )}
         {!isUserInSport() && (
           <Button
             variant="contained"
@@ -154,8 +158,8 @@ const Sport = () => {
         ))}
       </Box>
 
-        {/* Sport edition dialog*/}
-      <Dialog open={dialogEdit.open} onClose={() => setDialogEdit({open:false, name:dialogEdit.name, description:dialogEdit.description})} maxWidth="sm" fullWidth>
+      {/* Sport edition dialog*/}
+      <Dialog open={dialogEdit.open} onClose={() => setDialogEdit({ open: false, name: dialogEdit.name, description: dialogEdit.description })} maxWidth="sm" fullWidth>
         <DialogTitle>Edition</DialogTitle>
         <DialogContent>
           <TextField
@@ -165,7 +169,7 @@ const Sport = () => {
             fullWidth
             variant="outlined"
             value={dialogEdit.name}
-            onChange={(e) => setDialogEdit({open:true, name:e.target.value, description:dialogEdit.description})}
+            onChange={(e) => setDialogEdit({ open: true, name: e.target.value, description: dialogEdit.description })}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -176,13 +180,34 @@ const Sport = () => {
             rows={3}
             variant="outlined"
             value={dialogEdit.description}
-            onChange={(e) => setDialogEdit({open:true, name:dialogEdit.name, description:e.target.value})}
+            onChange={(e) => setDialogEdit({ open: true, name: dialogEdit.name, description: e.target.value })}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogEdit({open:false, name:dialogEdit.name, description:dialogEdit.description})}>Annuler</Button>
-          <Button onClick={() => {editSport();setDialogEdit({open:false, name:dialogEdit.description, description:dialogEdit.description})}} variant="contained">
+          <Button onClick={() => setDialogEdit({ open: false, name: dialogEdit.name, description: dialogEdit.description })}>Annuler</Button>
+          <Button onClick={() => { editSport(); setDialogEdit({ open: false, name: dialogEdit.description, description: dialogEdit.description }) }} variant="contained">
             Editer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Sport deletion dialog*/}
+      <Dialog open={dialogDelete} onClose={() => setDialogDelete(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir supprimer le sport ? Cette action est irréversible.</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogDelete(false)}>Annuler</Button>
+          <Button
+            onClick={() => {
+              deleteSport();
+              setDialogDelete(false);
+            }}
+            variant="contained"
+            color="error"
+          >
+            Supprimer
           </Button>
         </DialogActions>
       </Dialog>
