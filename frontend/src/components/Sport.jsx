@@ -3,9 +3,6 @@ import {
   Container,
   Typography,
   Grid,
-  Card,
-  CardContent,
-  CardActions,
   Button,
   Dialog,
   DialogTitle,
@@ -13,18 +10,17 @@ import {
   DialogActions,
   TextField,
   Box,
-  Chip,
   Alert,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Group as GroupIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { fr } from 'date-fns/locale';
+import 'dayjs/locale/fr';
 
 const Sport = () => {
   const { user } = useAuth();
@@ -35,19 +31,17 @@ const Sport = () => {
   const [dialogEdit, setDialogEdit] = useState({ open: false, name: '', description: '' });
   const [dialogDelete, setDialogDelete] = useState(false);
   const [dialogCreateTraining, setDialogCreateTraining] = useState(false);
-  const [newTraining, setNewTraining] = useState({ title: "", description: "", date: "", timeStart: "", timeEnd: "", location: "", maxParticipants: "" });
+  const [newTraining, setNewTraining] = useState({ title: "", description: "", date: null, time_start: null, time_end: null, location: "", max_participants: "" });
   const [activePanel, setActivePanel] = useState('trainings');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [openStartTime, setOpenStartTime] = useState(false);
+  const [openEndTime, setOpenEndTime] = useState(false);
   const { id } = useParams();
   useEffect(() => {
     fetchSport();
 
   }, []);
-
-  const createNewSport = async () => {
-
-  };
 
   const deleteSport = async () => {
     try {
@@ -64,6 +58,17 @@ const Sport = () => {
       fetchSport();
     } catch (error) {
       console.error("Echec de l'édition du sport", error);
+    }
+  };
+
+  const createNewTraining = async () => {
+    try {
+      await axios.post(`http://localhost:8080/api/trainings`, newTraining);
+      setNewTraining({ title: "", description: "", date: null, time_start: null, time_end: null, location: "", max_participants: "" });
+      setSuccess("Nouvel entraînement crée");
+    } catch (error) {
+      setError("Echec de la création de l'entraînement");
+      console.error("Echec de la création de l'entraînement", error);
     }
   };
 
@@ -273,10 +278,8 @@ const Sport = () => {
             onChange={(e) => setNewTraining({ ...newTraining, location: e.target.value })}
             sx={{ mb: 2 }}
           />
-          <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            adapterLocale={fr}>
-            <Grid container alignItems="center">
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
+            <Grid container >
               <Grid>
                 <DatePicker
                   label="Date de l'entraînement"
@@ -285,56 +288,72 @@ const Sport = () => {
                   disablePast
                   sx={{ mb: 2 }}
                   slotProps={{ textField: { margin: 'dense', variant: 'outlined' } }}
+                  format="DD/MM/YYYY"
                 />
               </Grid>
-              <Grid container >
+              <Grid container spacing={2}>
                 <Grid>
-                  <TimePicker
+                  <TextField
                     label="Heure de début"
-                    value={newTraining.timeStart}
-                    sx={{ mb: 2, mr:2}}
-                    onChange={(newValue) => {
-                      setNewTraining({ ...newTraining, timeStart: newValue });
-                    }}
-                    // slotProps={{ textField: { margin: 'dense', variant: 'outlined' } }}
-                    views={['hours', 'minutes']}  // Affiche d'abord les heures, puis les minutes
-                    openTo="hours"
-                    inputFormat="HH:mm"
-                    ampm={false}
-                    components={{
-                      OpenPickerIcon: () => null, // Masque l'icône d'horloge (optionnel)
-                    }}
-                    viewRenderers={{
-                      hours: renderTimeViewClock,
-                      minutes: renderTimeViewClock,
-                    }}
-                    slotProps={{
-                      textField: { margin: 'dense', variant: 'outlined' } ,
-                      clock: {
-                        renderDigitalClockTimeView: false, // Désactive l'affichage digital (optionnel)
-                      },
-                      dialog: {
-                        sx: {
-                          '& .MuiClockPicker-toolbars': {
-                            display: 'none', // Masque les boutons de navigation (optionnel)
-                          },
-                        },
-                      },
-                    }}
+                    value={newTraining.time_start ? newTraining.time_start.format('HH:mm') : ''}
+                    onClick={() => setOpenStartTime(true)}
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
                   />
+                  <Dialog open={openStartTime} onClose={() => setOpenStartTime(false)}>
+                    <StaticTimePicker
+                      value={newTraining.time_start}
+                      onChange={(newValue) => {
+                        setNewTraining({ ...newTraining, time_start: newValue });
+                      }}
+                      onAccept={() => setOpenStartTime(false)}
+                      ampm={false}
+                      slotProps={{
+                        actionBar: {
+                          actions: ['accept'],
+                        },
+                      }}
+                      sx={{ p: 2 }}
+                    />
+                  </Dialog>
                 </Grid>
                 <Grid>
-                  <TimePicker
+                  <TextField
                     label="Heure de fin"
-                    sx={{ mb: 2 }}
-                    value={newTraining.timeEnd}
-                    onChange={(newValue) => {
-                      setNewTraining({ ...newTraining, timeEnd: newValue });
-                    }}
-                    slotProps={{ textField: { margin: 'dense', variant: 'outlined' } }}
-                    inputFormat="HH:mm"
-                    ampm={false}
+                    value={newTraining.time_end ? newTraining.time_end.format('HH:mm') : ''}
+                    onClick={() => setOpenEndTime(true)}
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
                   />
+                  <Dialog open={openEndTime} onClose={() => setOpenEndTime(false)}>
+                    <StaticTimePicker
+                      value={newTraining.endTime}
+                      onChange={(newValue) => {
+                        setNewTraining({ ...newTraining, time_end: newValue });
+                      }}
+                      onAccept={() => setOpenEndTime(false)}
+                      ampm={false}
+                      shouldDisableTime={(timeValue, clockType) => {
+                        if (!newTraining.startTime) return false;
+                        const startTime = newTraining.startTime;
+                        if (clockType === 'hours') {
+                          return timeValue < startTime.hour();
+                        }
+                        if (clockType === 'minutes') {
+                          return timeValue < startTime.minute() && startTime.hour() === timeValue;
+                        }
+                        return false;
+                      }}
+                      slotProps={{
+                        actionBar: {
+                          actions: ['accept'],
+                        },
+                      }}
+                      sx={{ p: 2 }}
+                    />
+                  </Dialog>
                 </Grid>
               </Grid>
             </Grid>
@@ -345,13 +364,14 @@ const Sport = () => {
             fullWidth
             multiline
             rows={1}
+            style={{marginTop:20}}
             type="number"
             variant="outlined"
-            value={newTraining.maxParticipants}
+            value={newTraining.max_participants}
             onChange={(e) => {
               const value = e.target.value;
               if (/^\d*$/.test(value)) {
-                setNewTraining({ ...newTraining, maxParticipants: value });
+                setNewTraining({ ...newTraining, max_participants: value });
               }
             }}
           />
@@ -359,7 +379,7 @@ const Sport = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogCreateTraining(false)}>Annuler</Button>
-          <Button onClick={() => { createNewSport(); setDialogCreateTraining(false) }} variant="contained">
+          <Button onClick={() => { createNewTraining(); setDialogCreateTraining(false) }} variant="contained">
             Créer
           </Button>
         </DialogActions>
