@@ -10,11 +10,11 @@ type Training struct {
 	SportID         primitive.ObjectID   `bson:"sport_id" json:"sport_id"`
 	Title           string               `bson:"title" json:"title"`
 	Description     string               `bson:"description" json:"description"`
-	Date            time.Time            `bson:"date" json:"date"`
+	Date            string               `bson:"date" json:"date"`
 	TimeStart       string               `bson:"time_start" json:"time_start"`
 	TimeEnd         string               `bson:"time_end" json:"time_end"`
 	Location        string               `bson:"location" json:"location"`
-	MaxParticipants int                  `bson:"max_participants" json:"max_participants"`
+	MaxParticipants int               `bson:"max_participants" json:"max_participants"`
 	Participants    []primitive.ObjectID `bson:"participants" json:"participants"`
 	CreatedBy       primitive.ObjectID   `bson:"created_by" json:"created_by"`
 	CreatedAt       time.Time            `bson:"created_at" json:"created_at"`
@@ -25,9 +25,9 @@ type CreateTrainingRequest struct {
 	SportID         string    `json:"sport_id" binding:"required"`
 	Title           string    `json:"title"`
 	Description     string    `json:"description"`
-	Date        	time.Time `json:"date" binding:"required"`
+	Date        	string    `json:"date" binding:"required"`
 	TimeStart		string	  `json:"time_start" binding:"required"`
 	TimeEnd			string	  `json:"time_end" binding:"required"`
 	Location        string    `json:"location" binding:"required"`
-	MaxParticipants int       `json:"max_participants"`
+	MaxParticipants string    `json:"max_participants"`
 }

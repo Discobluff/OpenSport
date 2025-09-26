@@ -63,11 +63,13 @@ const Sport = () => {
 
   const createNewTraining = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/trainings`, newTraining);
+      await axios.post(`http://localhost:8080/api/trainings`, {...newTraining, sport_id:sport.id, date: newTraining.date.format('DD/MM/YYYY'), time_start: newTraining.time_start.format('HH:mm'), time_end: newTraining.time_end.format('HH:mm')});
       setNewTraining({ title: "", description: "", date: null, time_start: null, time_end: null, location: "", max_participants: "" });
       setSuccess("Nouvel entraînement crée");
+      setError('');
     } catch (error) {
       setError("Echec de la création de l'entraînement");
+      setSuccess("");
       console.error("Echec de la création de l'entraînement", error);
     }
   };
