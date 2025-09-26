@@ -20,6 +20,11 @@ import { Add as AddIcon, Delete as DeleteIcon, Group as GroupIcon, Edit as EditI
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { fr } from 'date-fns/locale';
 
 const Sport = () => {
   const { user } = useAuth();
@@ -29,6 +34,9 @@ const Sport = () => {
   const [loading, setLoading] = useState(true);
   const [dialogEdit, setDialogEdit] = useState({ open: false, name: '', description: '' });
   const [dialogDelete, setDialogDelete] = useState(false);
+  const [dialogCreateTraining, setDialogCreateTraining] = useState(false);
+  const [newTraining, setNewTraining] = useState({ title: "", description: "", date: "", timeStart: "", timeEnd: "", location: "", maxParticipants: "" });
+  const [activePanel, setActivePanel] = useState('trainings');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const { id } = useParams();
@@ -36,6 +44,10 @@ const Sport = () => {
     fetchSport();
 
   }, []);
+
+  const createNewSport = async () => {
+
+  };
 
   const deleteSport = async () => {
     try {
@@ -136,27 +148,222 @@ const Sport = () => {
         </Alert>
       )}
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3 }}>
-        <Typography variant="h5" component="h1">
+      <div style={{
+        display: 'flex',
+        background: '#cfcfcf',
+        justifyContent: 'flex-start',
+      }}>
+        {/* Onglet "Entraînements" */}
+        <button
+          onClick={() => setActivePanel('trainings')}
+          style={{
+            background: activePanel === 'trainings' ? '#FFFFFF' : 'transparent',
+            borderRadius: '0',
+            color: activePanel === 'trainings' ? '#1976d2' : '#000000',
+            cursor: 'pointer',
+            position: 'relative',
+            fontSize: 'larger',
+          }}
+        >
+          Entraînements
+          {activePanel === 'trainings' && (
+            <div style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              width: '100%',
+              height: '3px',
+              backgroundColor: '#1976d2',
+            }} />
+          )}
+        </button>
+
+        {/* Onglet "Membres" */}
+        <button
+          onClick={() => setActivePanel('members')}
+          style={{
+            padding: '12px 24px',
+            background: activePanel === 'members' ? '#FFFFFF' : 'transparent',
+            fontSize: 'larger',
+            borderRadius: '0',
+            color: activePanel === 'members' ? '#1976d2' : '#000000',
+            cursor: 'pointer',
+            position: 'relative',
+          }}
+        >
           Membres
-        </Typography>
-      </ Box>
-      <Box>
-        {members.map((member) => (
-          <Box
-            key={member.id}
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              p: 1,
-              borderBottom: '1px solid #ccc',
+          {activePanel === 'members' && (
+            <div style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              width: '100%',
+              height: '3px',
+              backgroundColor: '#1976d2',
+            }} />
+          )}
+        </button>
+      </div>
+
+      {/* Panel trainings */}
+      {activePanel === 'trainings' && (
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setDialogCreateTraining(true)}
+          sx={{ m: 2 }}
+        >
+          Créer un entraînement
+        </Button>
+      )}
+
+      {/* Panel members */}
+      {activePanel === 'members' && (
+        <Box>
+          {members.map((member) => (
+            <Box
+              key={member.id}
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                p: 1,
+                borderBottom: '1px solid #ccc',
+              }}
+            >
+              <Typography variant="h6">{member.name}</Typography>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Traning creation dialog*/}
+      <Dialog open={dialogCreateTraining} onClose={() => setDialogCreateTraining(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Création d'un entraînement</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nom (optionnel)"
+            fullWidth
+            variant="outlined"
+            value={newTraining.name}
+            onChange={(e) => setNewTraining({ ...newTraining, description: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Description (optionnel)"
+            fullWidth
+            multiline
+            rows={2}
+            variant="outlined"
+            value={newTraining.description}
+            onChange={(e) => setNewTraining({ ...newTraining, description: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Lieu"
+            fullWidth
+            multiline
+            rows={1}
+            variant="outlined"
+            value={newTraining.location}
+            onChange={(e) => setNewTraining({ ...newTraining, location: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <LocalizationProvider
+            dateAdapter={AdapterDateFns}
+            adapterLocale={fr}>
+            <Grid container alignItems="center">
+              <Grid>
+                <DatePicker
+                  label="Date de l'entraînement"
+                  value={newTraining.date}
+                  onChange={(newValue) => setNewTraining({ ...newTraining, date: newValue })}
+                  disablePast
+                  sx={{ mb: 2 }}
+                  slotProps={{ textField: { margin: 'dense', variant: 'outlined' } }}
+                />
+              </Grid>
+              <Grid container >
+                <Grid>
+                  <TimePicker
+                    label="Heure de début"
+                    value={newTraining.timeStart}
+                    sx={{ mb: 2, mr:2}}
+                    onChange={(newValue) => {
+                      setNewTraining({ ...newTraining, timeStart: newValue });
+                    }}
+                    // slotProps={{ textField: { margin: 'dense', variant: 'outlined' } }}
+                    views={['hours', 'minutes']}  // Affiche d'abord les heures, puis les minutes
+                    openTo="hours"
+                    inputFormat="HH:mm"
+                    ampm={false}
+                    components={{
+                      OpenPickerIcon: () => null, // Masque l'icône d'horloge (optionnel)
+                    }}
+                    viewRenderers={{
+                      hours: renderTimeViewClock,
+                      minutes: renderTimeViewClock,
+                    }}
+                    slotProps={{
+                      textField: { margin: 'dense', variant: 'outlined' } ,
+                      clock: {
+                        renderDigitalClockTimeView: false, // Désactive l'affichage digital (optionnel)
+                      },
+                      dialog: {
+                        sx: {
+                          '& .MuiClockPicker-toolbars': {
+                            display: 'none', // Masque les boutons de navigation (optionnel)
+                          },
+                        },
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid>
+                  <TimePicker
+                    label="Heure de fin"
+                    sx={{ mb: 2 }}
+                    value={newTraining.timeEnd}
+                    onChange={(newValue) => {
+                      setNewTraining({ ...newTraining, timeEnd: newValue });
+                    }}
+                    slotProps={{ textField: { margin: 'dense', variant: 'outlined' } }}
+                    inputFormat="HH:mm"
+                    ampm={false}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+          </LocalizationProvider>
+          <TextField
+            margin="dense"
+            label="Nombre de participants maximum (optionnel)"
+            fullWidth
+            multiline
+            rows={1}
+            type="number"
+            variant="outlined"
+            value={newTraining.maxParticipants}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value)) {
+                setNewTraining({ ...newTraining, maxParticipants: value });
+              }
             }}
-          >
-            <Typography variant="h6">{member.name}</Typography>
-          </Box>
-        ))}
-      </Box>
+          />
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogCreateTraining(false)}>Annuler</Button>
+          <Button onClick={() => { createNewSport(); setDialogCreateTraining(false) }} variant="contained">
+            Créer
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Sport edition dialog*/}
       <Dialog open={dialogEdit.open} onClose={() => setDialogEdit({ open: false, name: dialogEdit.name, description: dialogEdit.description })} maxWidth="sm" fullWidth>
