@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"time"
+	"strconv"
 
 	"opensport/backend/internal/database"
 	"opensport/backend/internal/models"
@@ -16,10 +17,10 @@ import (
 func CreateTraining(c *gin.Context) {
 	var req models.CreateTrainingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	userID, _ := c.Get("user_id")
 	creatorID, err := primitive.ObjectIDFromHex(userID.(string))
 	if err != nil {
@@ -46,16 +47,20 @@ func CreateTraining(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Only sport admin can create trainings"})
 		return
 	}
+	maxParticipants, err := strconv.Atoi(req.MaxParticipants)
+	if err != nil {
+		maxParticipants = 0
+	}
 
 	training := models.Training{
 		SportID:         sportID,
 		Title:           req.Title,
 		Description:     req.Description,
-		Date:      	     req.Date,
-		TimeStart:		 req.TimeStart,
-		TimeEnd:		 req.TimeEnd,
+		Date:            req.Date,
+		TimeStart:       req.TimeStart,
+		TimeEnd:         req.TimeEnd,
 		Location:        req.Location,
-		MaxParticipants: req.MaxParticipants,
+		MaxParticipants: maxParticipants,
 		Participants:    []primitive.ObjectID{},
 		CreatedBy:       creatorID,
 		CreatedAt:       time.Now(),
@@ -76,7 +81,7 @@ func CreateTraining(c *gin.Context) {
 func GetTrainings(c *gin.Context) {
 	sportID := c.Query("sport_id")
 	filter := bson.M{}
-	
+
 	if sportID != "" {
 		sportObjID, err := primitive.ObjectIDFromHex(sportID)
 		if err != nil {
@@ -119,7 +124,7 @@ func JoinTraining(c *gin.Context) {
 	}
 
 	collection := database.GetCollection("trainings")
-	
+
 	// Check if training exists and has capacity
 	var training models.Training
 	err = collection.FindOne(context.TODO(), bson.M{"_id": trainingObjID}).Decode(&training)
