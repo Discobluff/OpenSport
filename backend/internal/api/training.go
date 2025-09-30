@@ -62,8 +62,8 @@ func CreateTraining(c *gin.Context) {
 		TimeEnd:         req.TimeEnd,
 		Location:        req.Location,
 		MaxParticipants: maxParticipants,
-		Presents:	     []primitive.ObjectID{},
-		Absents:	     []primitive.ObjectID{},
+		Presents:        []primitive.ObjectID{},
+		Absents:         []primitive.ObjectID{},
 		CreatedBy:       creatorID,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
@@ -103,13 +103,52 @@ func DeleteTraining(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Training deleted successfully"})
 }
 
+func EditTraining(c *gin.Context) {
+	var req struct {
+		Title           string `json:"title"`
+		Description     string `json:"description"`
+		Date            string `json:"date"`
+		Location        string `json:"location"`
+		TimeStart       string `json:"time_start"`
+		TimeEnd         string `json:"time_end"`
+		MaxParticipants string `json:"max_participants"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	trainingID := c.Param("id")
+	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid training ID"})
+		return
+	}
+
+	maxParticipants, err := strconv.Atoi(req.MaxParticipants)
+	if err != nil {
+		maxParticipants = 0
+	}
+
+	collection := database.GetCollection("trainings")
+	update := bson.M{"$set": bson.M{"title": req.Title, "description": req.Description, "date":req.Date, "time_start":req.TimeStart, "time_end":req.TimeEnd, "location":req.Location, "max_participants":maxParticipants, "updated_at": time.Now()}}
+	_, err = collection.UpdateOne(context.TODO(), bson.M{"_id": trainingObjID}, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to edit training"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Training edited successfully"})
+}
+
 func GetTraining(c *gin.Context) {
 	trainingID := c.Param("id")
 	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid training ID"})
 		return
-	}	
+	}
 	collection := database.GetCollection("trainings")
 	var training models.Training
 	err = collection.FindOne(context.TODO(), bson.M{"_id": trainingObjID}).Decode(&training)
@@ -117,8 +156,8 @@ func GetTraining(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Training not found"})
 		return
 	}
-	
-	c.JSON(http.StatusOK, gin.H{"training":training})
+
+	c.JSON(http.StatusOK, gin.H{"training": training})
 }
 
 func GetTrainings(c *gin.Context) {
@@ -129,6 +168,7 @@ func GetTrainings(c *gin.Context) {
 		sportObjID, err := primitive.ObjectIDFromHex(sportID)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sport ID"})
+			println("a")
 			return
 		}
 		filter["sport_id"] = sportObjID
@@ -138,6 +178,7 @@ func GetTrainings(c *gin.Context) {
 	opts := options.Find().SetSort(bson.D{{Key: "date", Value: -1}}) // Sort by date in descending order
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
+		println("b")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch trainings"})
 		return
 	}
@@ -145,6 +186,7 @@ func GetTrainings(c *gin.Context) {
 
 	var trainings []models.Training
 	if err := cursor.All(context.TODO(), &trainings); err != nil {
+		println("c",err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode trainings"})
 		return
 	}

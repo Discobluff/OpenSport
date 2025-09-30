@@ -73,6 +73,7 @@ func main() {
 		protected.POST("/trainings/:id/join", api.JoinTraining)
 		protected.POST("/trainings/:id/leave", api.LeaveTraining)
 		protected.POST("/trainings/:id/delete", api.DeleteTraining)
+		protected.POST("/trainings/:id/edit", api.EditTraining)
 	}
 
 	// Health check
