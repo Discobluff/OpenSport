@@ -282,6 +282,7 @@ const Sport = () => {
             Créer un entraînement
           </Button>
           {trainings.map((training) => (
+            <Tooltip title="Accéder à l'entraînement" arrow>
             <Box
               key={training.id}
               onClick={() => navigate(`/training/${training.id}`)}
@@ -317,6 +318,7 @@ const Sport = () => {
               <Typography variant="h7">{training.title}</Typography>
               <Typography variant="h8" color="#575757">{training.description}</Typography>
             </Box>
+            </Tooltip>
           ))}
         </Box>
       )}
