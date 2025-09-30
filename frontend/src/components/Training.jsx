@@ -15,8 +15,9 @@ import {
   Box,
   Chip,
   Alert,
+  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Group as GroupIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -119,8 +120,18 @@ const Sports = () => {
 
   return (
     <Container sx={{ mt: 4 }}>
+      <Tooltip placement="top" title="Retour au sport" arrow>
       <ArrowBackIcon sx={{cursor:'pointer'}} onClick={() => navigate(`/sport/${sport.id}`)}/>
+      </Tooltip>
+      <Box sx={{ display: 'flex', alignItems: 'center'}}>
       <Typography variant='h3'>Entraînement de {sport.name}</Typography>
+      <Tooltip title="Modifier l'entraînement" arrow>
+      <EditIcon fontSize='large' sx={{ml:2, cursor:'pointer'}}/>
+      </Tooltip>
+      <Tooltip title="Supprimer l'entraînement" arrow>
+      <DeleteIcon onClick={() => setOpenDialogDelete(true)} fontSize='large' sx={{cursor:'pointer'}}/>
+      </Tooltip>
+      </Box>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
           {error}

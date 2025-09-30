@@ -291,11 +291,12 @@ const Sport = () => {
                 alignItems: 'flex-start',
                 p: 1,
                 borderBottom: '1px solid #ccc',
+                cursor:'pointer',
               }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <Typography variant="h6">{training.date} de {training.time_start} à {training.time_end}, {training.location}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+                <Box sx={{ display: 'flex', alignItems: 'center', cursor:'default'}} onClick={(e) => e.stopPropagation()}>
                   {isUserPresentInTraining(training.id) && (
                     <Chip label="Présent" sx={{ mr: 1, color: "#24bf27" }} variant="outlined" />
                   )}

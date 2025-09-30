@@ -80,6 +80,29 @@ func CreateTraining(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"training": training})
 }
 
+func DeleteTraining(c *gin.Context) {
+	trainingID := c.Param("id")
+	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid training ID"})
+		return
+	}
+
+	collection := database.GetCollection("trainings")
+	resultDelete, err := collection.DeleteOne(context.TODO(), bson.M{"_id": trainingObjID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete training"})
+		return
+	}
+
+	if resultDelete.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Training not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Training deleted successfully"})
+}
+
 func GetTraining(c *gin.Context) {
 	trainingID := c.Param("id")
 	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
