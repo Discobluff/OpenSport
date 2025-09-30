@@ -15,7 +15,8 @@ type Training struct {
 	TimeEnd         string               `bson:"time_end" json:"time_end"`
 	Location        string               `bson:"location" json:"location"`
 	MaxParticipants int               `bson:"max_participants" json:"max_participants"`
-	Participants    []primitive.ObjectID `bson:"participants" json:"participants"`
+	Presents        []primitive.ObjectID `bson:"presents" json:"presents"`
+	Absents         []primitive.ObjectID `bson:"absents" json:"absents"`
 	CreatedBy       primitive.ObjectID   `bson:"created_by" json:"created_by"`
 	CreatedAt       time.Time            `bson:"created_at" json:"created_at"`
 	UpdatedAt       time.Time            `bson:"updated_at" json:"updated_at"`

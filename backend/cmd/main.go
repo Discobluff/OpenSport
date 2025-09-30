@@ -67,9 +67,11 @@ func main() {
 		protected.POST("/sport/:id/edit", auth.AdminOnly(), api.EditSport)
 		
 		// Training routes
-		protected.GET("/trainings", api.GetTrainings)
+		protected.GET("/trainings/:id", api.GetTrainings)
+		protected.GET("/training/:id", api.GetTraining)
 		protected.POST("/trainings", api.CreateTraining)
 		protected.POST("/trainings/:id/join", api.JoinTraining)
+		protected.POST("/trainings/:id/leave", api.LeaveTraining)
 	}
 
 	// Health check

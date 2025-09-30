@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Chip,
   Container,
   Typography,
   Grid,
@@ -11,8 +12,9 @@ import {
   TextField,
   Box,
   Alert,
+  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
@@ -27,6 +29,7 @@ const Sport = () => {
   const navigate = useNavigate();
   const [sport, setSport] = useState([])
   const [members, setMembers] = useState([]);
+  const [trainings, setTrainings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogEdit, setDialogEdit] = useState({ open: false, name: '', description: '' });
   const [dialogDelete, setDialogDelete] = useState(false);
@@ -40,7 +43,7 @@ const Sport = () => {
   const { id } = useParams();
   useEffect(() => {
     fetchSport();
-
+    fetchTrainings();
   }, []);
 
   const deleteSport = async () => {
@@ -63,9 +66,10 @@ const Sport = () => {
 
   const createNewTraining = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/trainings`, {...newTraining, sport_id:sport.id, date: newTraining.date.format('DD/MM/YYYY'), time_start: newTraining.time_start.format('HH:mm'), time_end: newTraining.time_end.format('HH:mm')});
+      await axios.post(`http://localhost:8080/api/trainings`, { ...newTraining, sport_id: sport.id, date: newTraining.date.format('DD/MM/YYYY'), time_start: newTraining.time_start.format('HH:mm'), time_end: newTraining.time_end.format('HH:mm') });
       setNewTraining({ title: "", description: "", date: null, time_start: null, time_end: null, location: "", max_participants: "" });
-      setSuccess("Nouvel entraînement crée");
+      setSuccess("Nouvel entraînement créé");
+      fetchTrainings();
       setError('');
     } catch (error) {
       setError("Echec de la création de l'entraînement");
@@ -81,6 +85,39 @@ const Sport = () => {
       setMembers(response.data.members || []);
     } catch (error) {
       console.error('Echec de la récupération des sports', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const joinTraining = async (trainingId) => {
+    try {
+      const response = await axios.post(`http://localhost:8080/api/trainings/${trainingId}/join`);
+      fetchTrainings();
+    } catch (error) {
+      console.error("Echec du rejoignement de l'entraînement", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const leaveTraining = async (trainingId) => {
+    try {
+      const response = await axios.post(`http://localhost:8080/api/trainings/${trainingId}/leave`);
+      fetchTrainings();
+    } catch (error) {
+      console.error("Echec du quittage de l'entraînement", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTrainings = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/trainings/${id}`);
+      setTrainings(response.data.trainings || []);
+    } catch (error) {
+      console.error('Echec de la récupération des entraînements', error);
     } finally {
       setLoading(false);
     }
@@ -103,6 +140,23 @@ const Sport = () => {
     return sport.members.includes(user.id);
   };
 
+  const isUserPresentInTraining = (trainingId) => {
+    let res = false;
+    trainings.forEach(training => {
+      if (training.id === trainingId && training.presents.includes(user.id)) { res = true };
+    });
+    return res;
+  };
+
+  const isUserAbsentInTraining = (trainingId) => {
+    let res = false;
+    trainings.forEach(training => {
+      if (training.id === trainingId && training.absents.includes(user.id)) { res = true };
+    });
+    return res;
+  };
+
+
   const isUserAdminOfSport = (sport) => {
     return sport.admin_id === user?.id;
   };
@@ -122,10 +176,14 @@ const Sport = () => {
           {sport.name}
         </Typography>
         {(user.role === "Admin") && (
-          <EditIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogEdit({ open: true, id: sport.id, name: sport.name, description: sport.description })} />
+          <Tooltip title="Modifier le sport" arrow>
+            <EditIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogEdit({ open: true, id: sport.id, name: sport.name, description: sport.description })} />
+          </Tooltip>
         )}
         {(user.role === "Admin") && (
-          <DeleteIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogDelete(true)} />
+          <Tooltip title="Supprimer le sport" arrow>
+            <DeleteIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogDelete(true)} />
+          </Tooltip>
         )}
         {!isUserInSport() && (
           <Button
@@ -166,7 +224,7 @@ const Sport = () => {
           style={{
             background: activePanel === 'trainings' ? '#FFFFFF' : 'transparent',
             borderRadius: '0',
-            color: activePanel === 'trainings' ? '#1976d2' : '#000000',
+            color: activePanel === 'trainings' ? '#6c2466' : '#000000',
             cursor: 'pointer',
             position: 'relative',
             fontSize: 'larger',
@@ -180,7 +238,7 @@ const Sport = () => {
               left: '0',
               width: '100%',
               height: '3px',
-              backgroundColor: '#1976d2',
+              backgroundColor: '#6c2466',
             }} />
           )}
         </button>
@@ -193,7 +251,7 @@ const Sport = () => {
             background: activePanel === 'members' ? '#FFFFFF' : 'transparent',
             fontSize: 'larger',
             borderRadius: '0',
-            color: activePanel === 'members' ? '#1976d2' : '#000000',
+            color: activePanel === 'members' ? '#6c2466' : '#000000',
             cursor: 'pointer',
             position: 'relative',
           }}
@@ -206,7 +264,7 @@ const Sport = () => {
               left: '0',
               width: '100%',
               height: '3px',
-              backgroundColor: '#1976d2',
+              backgroundColor: '#6c2466',
             }} />
           )}
         </button>
@@ -214,14 +272,52 @@ const Sport = () => {
 
       {/* Panel trainings */}
       {activePanel === 'trainings' && (
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setDialogCreateTraining(true)}
-          sx={{ m: 2 }}
-        >
-          Créer un entraînement
-        </Button>
+        <Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setDialogCreateTraining(true)}
+            sx={{ m: 2 }}
+          >
+            Créer un entraînement
+          </Button>
+          {trainings.map((training) => (
+            <Box
+              key={training.id}
+              onClick={() => navigate(`/training/${training.id}`)}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                p: 1,
+                borderBottom: '1px solid #ccc',
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <Typography variant="h6">{training.date} de {training.time_start} à {training.time_end}, {training.location}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+                  {isUserPresentInTraining(training.id) && (
+                    <Chip label="Présent" sx={{ mr: 1, color: "#24bf27" }} variant="outlined" />
+                  )}
+                  {isUserAbsentInTraining(training.id) && (
+                    <Chip label="Absent" sx={{ mr: 1, color: "#ff2121" }} variant="outlined" />
+                  )}
+                  <Typography variant="h6">{training.presents.length}</Typography>
+                  <Tooltip title="Présent" arrow>
+                  <CheckIcon sx={{ ml: 1, mr: 1, color: "#24bf27", cursor: "pointer" }} onClick={() => joinTraining(training.id)}></CheckIcon>
+                  </Tooltip>
+                  <Typography variant="h6">|</Typography>
+                  <Tooltip title="Absent" arrow>
+                  <CloseIcon sx={{ ml: 1, mr: 1, color: "#ff2121", cursor: "pointer" }} onClick={() => leaveTraining(training.id)}></CloseIcon>
+                  </Tooltip>
+                  <Typography variant="h6">{training.absents.length}</Typography>
+                </Box>
+              </Box>
+              <Typography variant="h7">{training.title}</Typography>
+              <Typography variant="h8" color="#575757">{training.description}</Typography>
+            </Box>
+          ))}
+        </Box>
       )}
 
       {/* Panel members */}
@@ -254,8 +350,8 @@ const Sport = () => {
             label="Nom (optionnel)"
             fullWidth
             variant="outlined"
-            value={newTraining.name}
-            onChange={(e) => setNewTraining({ ...newTraining, description: e.target.value })}
+            value={newTraining.title}
+            onChange={(e) => setNewTraining({ ...newTraining, title: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -366,7 +462,7 @@ const Sport = () => {
             fullWidth
             multiline
             rows={1}
-            style={{marginTop:20}}
+            style={{ marginTop: 20 }}
             type="number"
             variant="outlined"
             value={newTraining.max_participants}

@@ -7,15 +7,18 @@ import {
   CardContent,
   Box,
   Chip,
+  Tooltip,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [userSports, setUserSports] = useState([]);
   const [userTrainings, setUserTrainings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,31 +52,31 @@ const Dashboard = () => {
 
   return (
     <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Welcome, {user?.username}!
-      </Typography>
-
       <Grid container spacing={4}>
         {/* My Sports */}
         <Grid>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                My Sports ({userSports.length})
+                Mes sports ({userSports.length})
               </Typography>
               {userSports.length === 0 ? (
                 <Typography color="text.secondary">
-                  You haven't joined any sports yet.
+                  Vous n'avez pas encore rejoint de sports.
                 </Typography>
               ) : (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {userSports.map((sport) => (
+                    <Tooltip title="Aller sur la page du sport" arrow>
                     <Chip
                       key={sport.id}
                       label={sport.name}
+                      sx={{cursor:'pointer'}}
+                      onClick={()=>navigate(`/sport/${sport.id}`)}
                       variant="outlined"
                       color="primary"
                     />
+                    </Tooltip>
                   ))}
                 </Box>
               )}
@@ -86,11 +89,11 @@ const Dashboard = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                My Trainings ({userTrainings.length})
+                Mes entraînements ({userTrainings.length})
               </Typography>
               {userTrainings.length === 0 ? (
                 <Typography color="text.secondary">
-                  You haven't joined any trainings yet.
+                  Vous n'avez rejoint aucun entraînement.
                 </Typography>
               ) : (
                 <Box>

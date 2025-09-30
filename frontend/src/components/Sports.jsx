@@ -15,6 +15,7 @@ import {
   Box,
   Chip,
   Alert,
+  Tooltip,
 } from '@mui/material';
 import { Add as AddIcon, Group as GroupIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -139,25 +140,28 @@ const Sports = () => {
 
       <Grid container spacing={3}>
         {sports.map((sport) => (
+
           <Grid key={sport.id}>
             <Card>
-              <CardContent 
-                onClick={(user.role !== "Non licencié") ? () => navigate(`/sport/${sport.id}`) : () => setError("Vous devez être licencié pour accéder aux sports. Si vous l'êtes, contactez un membre du bureau")} 
-                style={{ cursor: 'pointer' }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  {sport.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  {sport.description || 'Pas de description'}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <GroupIcon fontSize="small" />
-                  <Typography variant="body2">
-                    {sport.members?.length || 0} membre{sport.members.length > 1 ? 's' : ''}
+              <Tooltip placement="top" title="Aller sur la page du sport" arrow>
+                <CardContent
+                  onClick={(user.role !== "Non licencié") ? () => navigate(`/sport/${sport.id}`) : () => setError("Vous devez être licencié pour accéder aux sports. Si vous l'êtes, contactez un membre du bureau")}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    {sport.name}
                   </Typography>
-                </Box>
-              </CardContent>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {sport.description || 'Pas de description'}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <GroupIcon fontSize="small" />
+                    <Typography variant="body2">
+                      {sport.members?.length || 0} membre{sport.members.length > 1 ? 's' : ''}
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Tooltip>
               <CardActions>
                 {isUserInSport(sport.id) && (
                   <Chip label="Rejoint" color="success" variant="outlined" />

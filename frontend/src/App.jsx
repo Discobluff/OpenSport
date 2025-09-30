@@ -7,18 +7,18 @@ import Navbar from './components/Navbar';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Sports from './components/Sports';
-import Trainings from './components/Trainings';
 import OAuthCallback from './components/OAuthCallback';
 import Users from './components/Users'
 import Sport from './components/Sport'
+import Training from './components/Training'
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: '#fe8400',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#6c2466',
     },
   },
 });
@@ -62,9 +62,9 @@ function App() {
                         <Users />
                       </ProtectedRoute>
                     } />
-                    <Route path="/trainings" element={
+                    <Route path="/training/:id" element={
                       <ProtectedRoute>
-                        <Trainings />
+                        <Training />
                       </ProtectedRoute>
                     } />
                     <Route path="/" element={<Navigate to="/dashboard" />} />

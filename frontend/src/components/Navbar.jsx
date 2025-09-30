@@ -15,9 +15,8 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard', admin: false },
+    { label: 'Menu', path: '/dashboard', admin: false },
     { label: 'Sports', path: '/sports', admin: false },
-    { label: 'Trainings', path: '/trainings', admin: false },
     { label: 'Membres', path: '/users', admin: true }
   ];
 

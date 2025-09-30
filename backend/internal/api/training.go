@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"net/http"
-	"time"
 	"strconv"
+	"time"
 
 	"opensport/backend/internal/database"
 	"opensport/backend/internal/models"
@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func CreateTraining(c *gin.Context) {
@@ -61,7 +62,8 @@ func CreateTraining(c *gin.Context) {
 		TimeEnd:         req.TimeEnd,
 		Location:        req.Location,
 		MaxParticipants: maxParticipants,
-		Participants:    []primitive.ObjectID{},
+		Presents:	     []primitive.ObjectID{},
+		Absents:	     []primitive.ObjectID{},
 		CreatedBy:       creatorID,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
@@ -78,8 +80,26 @@ func CreateTraining(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"training": training})
 }
 
+func GetTraining(c *gin.Context) {
+	trainingID := c.Param("id")
+	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid training ID"})
+		return
+	}	
+	collection := database.GetCollection("trainings")
+	var training models.Training
+	err = collection.FindOne(context.TODO(), bson.M{"_id": trainingObjID}).Decode(&training)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Training not found"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"training":training})
+}
+
 func GetTrainings(c *gin.Context) {
-	sportID := c.Query("sport_id")
+	sportID := c.Param("id")
 	filter := bson.M{}
 
 	if sportID != "" {
@@ -92,7 +112,8 @@ func GetTrainings(c *gin.Context) {
 	}
 
 	collection := database.GetCollection("trainings")
-	cursor, err := collection.Find(context.TODO(), filter)
+	opts := options.Find().SetSort(bson.D{{Key: "date", Value: -1}}) // Sort by date in descending order
+	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch trainings"})
 		return
@@ -133,7 +154,7 @@ func JoinTraining(c *gin.Context) {
 		return
 	}
 
-	if training.MaxParticipants > 0 && len(training.Participants) >= training.MaxParticipants {
+	if training.MaxParticipants > 0 && len(training.Presents) >= training.MaxParticipants {
 		c.JSON(http.StatusConflict, gin.H{"error": "Training is full"})
 		return
 	}
@@ -142,7 +163,10 @@ func JoinTraining(c *gin.Context) {
 	_, err = collection.UpdateOne(
 		context.TODO(),
 		bson.M{"_id": trainingObjID},
-		bson.M{"$addToSet": bson.M{"participants": userObjID}},
+		bson.M{
+			"$addToSet": bson.M{"presents": userObjID},
+			"$pull":     bson.M{"absents": userObjID},
+		},
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to join training"})
@@ -150,6 +174,48 @@ func JoinTraining(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully joined training"})
+}
+
+func LeaveTraining(c *gin.Context) {
+	trainingID := c.Param("id")
+	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid training ID"})
+		return
+	}
+
+	userID, _ := c.Get("user_id")
+	userObjID, err := primitive.ObjectIDFromHex(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	collection := database.GetCollection("trainings")
+
+	// Check if training exists and has capacity
+	var training models.Training
+	err = collection.FindOne(context.TODO(), bson.M{"_id": trainingObjID}).Decode(&training)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Training not found"})
+		return
+	}
+
+	// Remove user from training participants
+	_, err = collection.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": trainingObjID},
+		bson.M{
+			"$addToSet": bson.M{"absents": userObjID},
+			"$pull":     bson.M{"presents": userObjID},
+		},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to leave training"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully left training"})
 }
 
 func GetUserTrainings(c *gin.Context) {
@@ -161,7 +227,7 @@ func GetUserTrainings(c *gin.Context) {
 	}
 
 	collection := database.GetCollection("trainings")
-	cursor, err := collection.Find(context.TODO(), bson.M{"participants": userObjID})
+	cursor, err := collection.Find(context.TODO(), bson.M{"presents": userObjID})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user trainings"})
 		return

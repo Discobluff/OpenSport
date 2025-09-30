@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
 } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
@@ -146,10 +147,11 @@ const Users = () => {
                 <option value="Licencié">Licencié</option>
                 <option value="Admin">Admin</option>
               </select>
+              <Tooltip title="Supprimer le membre" arrow>
               <DeleteIcon
                 onClick={() => setOpenDialogDelete({open:true, name:user.username, userId:user.id})}
                 sx={{ cursor: 'pointer' }}
-              />
+              /></Tooltip>
             </Box>
           </Box>
         ))}
