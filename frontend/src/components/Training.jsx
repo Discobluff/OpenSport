@@ -34,7 +34,7 @@ const Sports = () => {
   const [sport, setSport] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogDelete, setDialogDelete] = useState(false);
-  const [dialogRemove, setDialogRemove] = useState({open:false,id:"",name:""});
+  const [dialogRemove, setDialogRemove] = useState({ open: false, id: "", name: "" });
   const [dialogEdit, setDialogEdit] = useState({ open: false, title: '', description: '', location: '', date: null, time_start: null, time_end: null, max_participants: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -43,7 +43,7 @@ const Sports = () => {
   const [activePanel, setActivePanel] = useState('presents');
   const [presents, setPresents] = useState([]);
   const [absents, setAbsents] = useState([]);
-  
+
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -69,7 +69,7 @@ const Sports = () => {
     }
   };
 
-  const removeFromTraining = async(userId) => {
+  const removeFromTraining = async (userId) => {
     try {
       const response = await axios.post(`http://localhost:8080/api/trainings/${id}/remove/${userId}`);
       fetchTraining();
@@ -292,7 +292,7 @@ const Sports = () => {
             >
               <Typography variant="h6">{member.username}</Typography>
               <Tooltip title="Retirer de l'entraînement" arrow>
-              <PersonRemoveIcon sx={{cursor:"pointer"}} onClick={() => setDialogRemove({open:true,id:member.id, name:member.username})}/>
+                <PersonRemoveIcon sx={{ cursor: "pointer" }} onClick={() => setDialogRemove({ open: true, id: member.id, name: member.username })} />
               </Tooltip>
             </Box>
           ))}
@@ -342,10 +342,10 @@ const Sports = () => {
           </Button>
         </DialogActions>
       </Dialog>
-            {/* Remove from Training Dialog */}
+      {/* Remove from Training Dialog */}
       <Dialog
         open={dialogRemove.open}
-        onClose={() => setDialogRemove({open:false, id:"", name:""})}
+        onClose={() => setDialogRemove({ open: false, id: "", name: "" })}
         maxWidth="xs"
         fullWidth
       >
@@ -354,11 +354,11 @@ const Sports = () => {
           <Typography>Êtes-vous sûr de vouloir retirer {dialogRemove.name} de l'entraînement ?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogRemove({open:false, id:"", name:""})}>Annuler</Button>
+          <Button onClick={() => setDialogRemove({ open: false, id: "", name: "" })}>Annuler</Button>
           <Button
             onClick={() => {
               removeFromTraining(dialogRemove.id);
-              setDialogRemove({open:false, id:"", name:""});
+              setDialogRemove({ open: false, id: "", name: "" });
             }}
             variant="contained"
             color="error"
@@ -368,7 +368,7 @@ const Sports = () => {
         </DialogActions>
       </Dialog>
 
-            {/*Dialog edit */}
+      {/*Dialog edit */}
       <Dialog open={dialogEdit.open} onClose={() => setDialogEdit({ ...dialogEdit, open: false })} maxWidth="sm" fullWidth>
         <DialogTitle>Modification de l'entraînement</DialogTitle>
         <DialogContent>

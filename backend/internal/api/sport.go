@@ -99,6 +99,74 @@ func GetSports(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"sports": sports})
 }
 
+func RemoveFromSport(c *gin.Context) {
+	sportID := c.Param("id")
+	sportObjID, err := primitive.ObjectIDFromHex(sportID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sport ID"})
+		return
+	}
+
+	userID := c.Param("idUser")
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	collection := database.GetCollection("sports")
+
+	// Check if sport exists
+	var sport models.Sport
+	err = collection.FindOne(context.TODO(), bson.M{"_id": sportObjID}).Decode(&sport)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Sport not found"})
+		return
+	}
+
+	// Remove user from sport participants
+	_, err = collection.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": sportObjID},
+		bson.M{
+			"$pull":     bson.M{"members": userObjID},
+		},
+	)
+	
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove from sport"})
+		return
+	}
+
+	//Remove from the member from the sports trainings
+	trainingCollection := database.GetCollection("trainings")
+	_, err = trainingCollection.UpdateMany(
+		context.TODO(),
+		bson.M{"sport_id": sportObjID},
+		bson.M{"$pull": bson.M{"presents": userObjID, "absents": userObjID}},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove member from sport trainings"})
+		return
+	}
+	
+	// Remove sport from user list
+	collectionUser := database.GetCollection("users")
+	_, err = collectionUser.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": userObjID},
+		bson.M{
+			"$pull":     bson.M{"sports": sportObjID},
+		},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove sport from user list"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully removed user from sport"})
+}
+
 func EditSport(c *gin.Context) {
 	var req struct {
 		Name string `json:"name"`

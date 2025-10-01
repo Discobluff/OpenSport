@@ -288,7 +288,7 @@ func RemoveFromTraining(c *gin.Context) {
 
 	collection := database.GetCollection("trainings")
 
-	// Check if training exists and has capacity
+	// Check if training exists
 	var training models.Training
 	err = collection.FindOne(context.TODO(), bson.M{"_id": trainingObjID}).Decode(&training)
 	if err != nil {

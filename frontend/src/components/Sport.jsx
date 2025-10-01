@@ -14,7 +14,7 @@ import {
   Alert,
   Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon, PersonRemove as PersonRemoveIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
@@ -40,6 +40,7 @@ const Sport = () => {
   const [success, setSuccess] = useState('');
   const [openStartTime, setOpenStartTime] = useState(false);
   const [openEndTime, setOpenEndTime] = useState(false);
+  const [dialogRemove, setDialogRemove] = useState({ open: false, id: "", name: "" });
   const { id } = useParams();
   useEffect(() => {
     fetchSport();
@@ -75,6 +76,18 @@ const Sport = () => {
       setError("Echec de la création de l'entraînement");
       setSuccess("");
       console.error("Echec de la création de l'entraînement", error);
+    }
+  };
+
+  const removeFromSport = async (userId) => {
+    try {
+      const response = await axios.post(`http://localhost:8080/api/sports/${id}/remove/${userId}`);
+      fetchSport();
+      fetchTrainings();
+      setSuccess('Membre retiré avec succès');
+    } catch (error) {
+      console.error("Echec du retirement du sport", error);
+      setSuccess("Le membre n'a pas pu être retiré");
     }
   };
 
@@ -137,7 +150,7 @@ const Sport = () => {
   };
 
   const isUserInSport = () => {
-    return sport.members.includes(user.id);
+    return sport.members != undefined ? sport.members.includes(user.id) : false;
   };
 
   const isUserPresentInTraining = (trainingId) => {
@@ -283,41 +296,41 @@ const Sport = () => {
           </Button>
           {trainings.map((training) => (
             <Tooltip title="Accéder à l'entraînement" arrow>
-            <Box
-              key={training.id}
-              onClick={() => navigate(`/training/${training.id}`)}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                p: 1,
-                borderBottom: '1px solid #ccc',
-                cursor:'pointer',
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Typography variant="h6">{training.date} de {training.time_start} à {training.time_end}, {training.location}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', cursor:'default'}} onClick={(e) => e.stopPropagation()}>
-                  {isUserPresentInTraining(training.id) && (
-                    <Chip label="Présent" sx={{ mr: 1, color: "#24bf27" }} variant="outlined" />
-                  )}
-                  {isUserAbsentInTraining(training.id) && (
-                    <Chip label="Absent" sx={{ mr: 1, color: "#ff2121" }} variant="outlined" />
-                  )}
-                  <Typography variant="h6">{training.presents.length}</Typography>
-                  <Tooltip title="Présent" arrow>
-                  <CheckIcon sx={{ ml: 1, mr: 1, color: "#24bf27", cursor: "pointer" }} onClick={() => joinTraining(training.id)}></CheckIcon>
-                  </Tooltip>
-                  <Typography variant="h6">|</Typography>
-                  <Tooltip title="Absent" arrow>
-                  <CloseIcon sx={{ ml: 1, mr: 1, color: "#ff2121", cursor: "pointer" }} onClick={() => leaveTraining(training.id)}></CloseIcon>
-                  </Tooltip>
-                  <Typography variant="h6">{training.absents.length}</Typography>
+              <Box
+                key={training.id}
+                onClick={() => navigate(`/training/${training.id}`)}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  p: 1,
+                  borderBottom: '1px solid #ccc',
+                  cursor: 'pointer',
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <Typography variant="h6">{training.date} de {training.time_start} à {training.time_end}, {training.location}</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'default' }} onClick={(e) => e.stopPropagation()}>
+                    {isUserPresentInTraining(training.id) && (
+                      <Chip label="Présent" sx={{ mr: 1, color: "#24bf27" }} variant="outlined" />
+                    )}
+                    {isUserAbsentInTraining(training.id) && (
+                      <Chip label="Absent" sx={{ mr: 1, color: "#ff2121" }} variant="outlined" />
+                    )}
+                    <Typography variant="h6">{training.presents.length}</Typography>
+                    <Tooltip title="Présent" arrow>
+                      <CheckIcon sx={{ ml: 1, mr: 1, color: "#24bf27", cursor: "pointer" }} onClick={() => joinTraining(training.id)}></CheckIcon>
+                    </Tooltip>
+                    <Typography variant="h6">|</Typography>
+                    <Tooltip title="Absent" arrow>
+                      <CloseIcon sx={{ ml: 1, mr: 1, color: "#ff2121", cursor: "pointer" }} onClick={() => leaveTraining(training.id)}></CloseIcon>
+                    </Tooltip>
+                    <Typography variant="h6">{training.absents.length}</Typography>
+                  </Box>
                 </Box>
+                <Typography variant="h7">{training.title}</Typography>
+                <Typography variant="h8" color="#575757">{training.description}</Typography>
               </Box>
-              <Typography variant="h7">{training.title}</Typography>
-              <Typography variant="h8" color="#575757">{training.description}</Typography>
-            </Box>
             </Tooltip>
           ))}
         </Box>
@@ -338,6 +351,9 @@ const Sport = () => {
               }}
             >
               <Typography variant="h6">{member.name}</Typography>
+              <Tooltip title="Retirer du sport" arrow>
+                <PersonRemoveIcon sx={{ cursor: "pointer" }} onClick={() => setDialogRemove({ open: true, id: member.id, name: member.name })} />
+              </Tooltip>
             </Box>
           ))}
         </Box>
@@ -482,6 +498,32 @@ const Sport = () => {
           <Button onClick={() => setDialogCreateTraining(false)}>Annuler</Button>
           <Button onClick={() => { createNewTraining(); setDialogCreateTraining(false) }} variant="contained">
             Créer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Remove from Training Dialog */}
+      <Dialog
+        open={dialogRemove.open}
+        onClose={() => setDialogRemove({ open: false, id: "", name: "" })}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirmer le retirement</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir retirer {dialogRemove.name} du sport ?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogRemove({ open: false, id: "", name: "" })}>Annuler</Button>
+          <Button
+            onClick={() => {
+              removeFromSport(dialogRemove.id);
+              setDialogRemove({ open: false, id: "", name: "" });
+            }}
+            variant="contained"
+            color="error"
+          >
+            Retirer
           </Button>
         </DialogActions>
       </Dialog>
