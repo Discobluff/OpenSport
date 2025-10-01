@@ -23,6 +23,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import 'dayjs/locale/fr';
+import dayjs from 'dayjs';
 
 const Sport = () => {
   const { user } = useAuth();
@@ -65,9 +66,15 @@ const Sport = () => {
     }
   };
 
+  const getDay = (date) => {
+    let res =  dayjs(date).locale('fr').format("dddd");
+    return res.charAt(0).toUpperCase() + res.slice(1);
+  };
+
+
   const createNewTraining = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/trainings`, { ...newTraining, sport_id: sport.id, date: newTraining.date.format('DD/MM/YYYY'), time_start: newTraining.time_start.format('HH:mm'), time_end: newTraining.time_end.format('HH:mm') });
+      await axios.post(`http://localhost:8080/api/trainings`, { ...newTraining, sport_id: sport.id, date: newTraining.date.format('YYYY/MM/DD'), time_start: newTraining.time_start.format('HH:mm'), time_end: newTraining.time_end.format('HH:mm') });
       setNewTraining({ title: "", description: "", date: null, time_start: null, time_end: null, location: "", max_participants: "" });
       setSuccess("Nouvel entraînement créé");
       fetchTrainings();
@@ -327,7 +334,7 @@ const Sport = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                  <Typography variant="h6">{training.date} de {training.time_start} à {training.time_end}, {training.location}</Typography>
+                  <Typography variant="h6">{dayjs(training.date).format("DD/MM/YYYY")}, {getDay(training.date)} de {training.time_start} à {training.time_end}, {training.location}</Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'default' }} onClick={(e) => e.stopPropagation()}>
                     {isUserPresentInTraining(training.id) && (
                       <Chip label="Présent" sx={{ mr: 1, color: "#24bf27" }} variant="outlined" />

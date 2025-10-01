@@ -84,6 +84,7 @@ const Sports = () => {
       setTraining(response.data.training || []);
       setPresents(response.data.presents || []);
       setAbsents(response.data.absents || []);
+      console.log(dayjs(training.date).locale("fr").format("dddd"));
     } catch (error) {
       console.error("Echec de la récupération de l'entraînement", error);
     } finally {
@@ -100,6 +101,11 @@ const Sports = () => {
       console.error("Echec de la modification de l'entraînement", error);
       setError("L'entraînement n'a pas pu être modifié")
     }
+  };
+  
+  const getDay = (date) => {
+    let res =  dayjs(date).locale('fr').format("dddd");
+    return res.charAt(0).toUpperCase() + res.slice(1);
   };
 
   const deleteTraining = async () => {
@@ -198,7 +204,7 @@ const Sports = () => {
         </Alert>
       )}
 
-      <Typography variant='h4'>{training.date} de {training.time_start} à {training.time_end}</Typography>
+      <Typography variant='h4'>{dayjs(training.date).format("DD/MM/YYYY")}, {getDay(training.date)} de {training.time_start} à {training.time_end}</Typography>
       <Typography variant='h5' sx={{ mt: 3 }}>{training.title}</Typography>
       <Typography variant='h6' color="#595959" sx={{ mb: 3 }}>{training.description}</Typography>
 
