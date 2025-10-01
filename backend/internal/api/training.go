@@ -156,8 +156,38 @@ func GetTraining(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Training not found"})
 		return
 	}
+	userCollection := database.GetCollection("users")
+	var usersPresents []models.User
+	if len(training.Presents) > 0 {
+		cursor, err := userCollection.Find(context.TODO(), bson.M{"_id": bson.M{"$in": training.Presents}})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user details"})
+			return
+		}
+		defer cursor.Close(context.TODO())
 
-	c.JSON(http.StatusOK, gin.H{"training": training})
+		if err := cursor.All(context.TODO(), &usersPresents); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode user details"})
+			return
+		}
+	}
+
+	var usersAbsents []models.User
+	if len(training.Absents) > 0 {
+		cursor, err := userCollection.Find(context.TODO(), bson.M{"_id": bson.M{"$in": training.Absents}})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user details"})
+			return
+		}
+		defer cursor.Close(context.TODO())
+
+		if err := cursor.All(context.TODO(), &usersAbsents); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode user details"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"training": training, "presents": usersPresents, "absents": usersAbsents})
 }
 
 func GetTrainings(c *gin.Context) {
@@ -239,6 +269,48 @@ func JoinTraining(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully joined training"})
+}
+
+func RemoveFromTraining(c *gin.Context) {
+	trainingID := c.Param("id")
+	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid training ID"})
+		return
+	}
+
+	userID := c.Param("idUser")
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	collection := database.GetCollection("trainings")
+
+	// Check if training exists and has capacity
+	var training models.Training
+	err = collection.FindOne(context.TODO(), bson.M{"_id": trainingObjID}).Decode(&training)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Training not found"})
+		return
+	}
+
+	// Remove user from training participants
+	_, err = collection.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": trainingObjID},
+		bson.M{
+			"$addToSet": bson.M{"absents": userObjID},
+			"$pull":     bson.M{"presents": userObjID},
+		},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to leave training"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully left training"})
 }
 
 func LeaveTraining(c *gin.Context) {

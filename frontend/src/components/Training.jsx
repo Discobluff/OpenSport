@@ -17,7 +17,7 @@ import {
   Alert,
   Tooltip,
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, ArrowBack as ArrowBackIcon, PersonRemove as PersonRemoveIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -34,11 +34,16 @@ const Sports = () => {
   const [sport, setSport] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogDelete, setDialogDelete] = useState(false);
+  const [dialogRemove, setDialogRemove] = useState({open:false,id:"",name:""});
   const [dialogEdit, setDialogEdit] = useState({ open: false, title: '', description: '', location: '', date: null, time_start: null, time_end: null, max_participants: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [openStartTime, setOpenStartTime] = useState(false);
   const [openEndTime, setOpenEndTime] = useState(false);
+  const [activePanel, setActivePanel] = useState('presents');
+  const [presents, setPresents] = useState([]);
+  const [absents, setAbsents] = useState([]);
+  
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -64,10 +69,21 @@ const Sports = () => {
     }
   };
 
+  const removeFromTraining = async(userId) => {
+    try {
+      const response = await axios.post(`http://localhost:8080/api/trainings/${id}/remove/${userId}`);
+      fetchTraining();
+    } catch (error) {
+      console.error("Echec du retirement de l'entraînement", error);
+    }
+  };
+
   const fetchTraining = async () => {
     try {
       const response = await axios.get(`http://localhost:8080/api/training/${id}`);
       setTraining(response.data.training || []);
+      setPresents(response.data.presents || []);
+      setAbsents(response.data.absents || []);
     } catch (error) {
       console.error("Echec de la récupération de l'entraînement", error);
     } finally {
@@ -203,6 +219,104 @@ const Sports = () => {
         </Box>
       )}
       {/*onglet presents absents */}
+      <div style={{
+        display: 'flex',
+        background: '#cfcfcf',
+        justifyContent: 'flex-start',
+      }}>
+        {/* Onglet Presents */}
+        <button
+          onClick={() => setActivePanel('presents')}
+          style={{
+            background: activePanel === 'presents' ? '#FFFFFF' : 'transparent',
+            borderRadius: '0',
+            color: activePanel === 'presents' ? '#6c2466' : '#000000',
+            cursor: 'pointer',
+            position: 'relative',
+            fontSize: 'larger',
+          }}
+        >
+          Présents
+          {activePanel === 'presents' && (
+            <div style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              width: '100%',
+              height: '3px',
+              backgroundColor: '#6c2466',
+            }} />
+          )}
+        </button>
+
+        {/* Onglet Absents */}
+        <button
+          onClick={() => setActivePanel('absents')}
+          style={{
+            padding: '12px 24px',
+            background: activePanel === 'absents' ? '#FFFFFF' : 'transparent',
+            fontSize: 'larger',
+            borderRadius: '0',
+            color: activePanel === 'absents' ? '#6c2466' : '#000000',
+            cursor: 'pointer',
+            position: 'relative',
+          }}
+        >
+          Absents
+          {activePanel === 'absents' && (
+            <div style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              width: '100%',
+              height: '3px',
+              backgroundColor: '#6c2466',
+            }} />
+          )}
+        </button>
+      </div>
+
+      {/* Panel Presents */}
+      {activePanel === "presents" && (
+        <Box>
+          {presents.map((member) => (
+            <Box
+              key={member.id}
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                p: 1,
+                borderBottom: '1px solid #ccc',
+              }}
+            >
+              <Typography variant="h6">{member.username}</Typography>
+              <Tooltip title="Retirer de l'entraînement" arrow>
+              <PersonRemoveIcon sx={{cursor:"pointer"}} onClick={() => setDialogRemove({open:true,id:member.id, name:member.username})}/>
+              </Tooltip>
+            </Box>
+          ))}
+        </Box>
+      )}
+      {/* Panel Absents */}
+      {activePanel === "absents" && (
+        <Box>
+          {absents.map((member) => (
+            <Box
+              key={member.id}
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                p: 1,
+                borderBottom: '1px solid #ccc',
+              }}
+            >
+              <Typography variant="h6">{member.username}</Typography>
+            </Box>
+          ))}
+        </Box>
+      )}
       {/* Delete Training Dialog */}
       <Dialog
         open={dialogDelete}
@@ -228,7 +342,33 @@ const Sports = () => {
           </Button>
         </DialogActions>
       </Dialog>
+            {/* Remove from Training Dialog */}
+      <Dialog
+        open={dialogRemove.open}
+        onClose={() => setDialogRemove({open:false, id:"", name:""})}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirmer le retirement</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir retirer {dialogRemove.name} de l'entraînement ?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogRemove({open:false, id:"", name:""})}>Annuler</Button>
+          <Button
+            onClick={() => {
+              removeFromTraining(dialogRemove.id);
+              setDialogRemove({open:false, id:"", name:""});
+            }}
+            variant="contained"
+            color="error"
+          >
+            Retirer
+          </Button>
+        </DialogActions>
+      </Dialog>
 
+            {/*Dialog edit */}
       <Dialog open={dialogEdit.open} onClose={() => setDialogEdit({ ...dialogEdit, open: false })} maxWidth="sm" fullWidth>
         <DialogTitle>Modification de l'entraînement</DialogTitle>
         <DialogContent>
