@@ -66,6 +66,8 @@ func main() {
 		protected.POST("/sport/:id/delete", auth.AdminOnly(), api.DeleteSport)
 		protected.POST("/sport/:id/edit", auth.AdminOnly(), api.EditSport)
 		protected.POST("/sports/:id/remove/:idUser", api.RemoveFromSport)
+		protected.POST("/sports/:id/admin/:idUser", api.SetAdminSport)
+		protected.POST("/sports/:id/member/:idUser", api.SetMemberSport)
 		
 		// Training routes
 		protected.GET("/trainings/:id", api.GetTrainings)

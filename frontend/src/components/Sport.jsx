@@ -14,7 +14,7 @@ import {
   Alert,
   Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon, PersonRemove as PersonRemoveIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon, PersonRemove as PersonRemoveIcon, AddModerator as AddModeratorIcon, RemoveModerator as RemoveModeratorIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
@@ -76,6 +76,24 @@ const Sport = () => {
       setError("Echec de la création de l'entraînement");
       setSuccess("");
       console.error("Echec de la création de l'entraînement", error);
+    }
+  };
+
+  const changeRoleToAdmin = async (userId) => {
+    try {
+      const response = await axios.post(`http://localhost:8080/api/sports/${id}/admin/${userId}`);
+      fetchSport();
+    } catch (error) {
+      console.error("Echec du passage à admin", error);
+    }
+  };
+
+  const changeRoleToMember = async (userId) => {
+    try {
+      const response = await axios.post(`http://localhost:8080/api/sports/${id}/member/${userId}`);
+      fetchSport();
+    } catch (error) {
+      console.error("Echec du passage à membre", error);
     }
   };
 
@@ -351,9 +369,23 @@ const Sport = () => {
               }}
             >
               <Typography variant="h6">{member.name}</Typography>
-              <Tooltip title="Retirer du sport" arrow>
-                <PersonRemoveIcon sx={{ cursor: "pointer" }} onClick={() => setDialogRemove({ open: true, id: member.id, name: member.name })} />
-              </Tooltip>
+              <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'default' }}>
+              {sport.admins_id.includes(member.id) && (
+              <Chip label="Admin" />
+              )}
+                {sport.admins_id.includes(member.id) ? (
+                    <Tooltip title="Passer à membre" arrow>
+                  <RemoveModeratorIcon sx={{cursor:'pointer', ml:2}} onClick={()=> changeRoleToMember(member.id)}/>
+                    </Tooltip>
+                ) : (
+                  <Tooltip title="Passer à admin" arrow>
+                  <AddModeratorIcon sx={{cursor:'pointer', ml:2}} onClick={()=> changeRoleToAdmin(member.id)}/>
+                  </Tooltip>
+                )}
+                <Tooltip title="Retirer du sport" arrow>
+                  <PersonRemoveIcon sx={{ cursor: "pointer", ml: 2 }} onClick={() => setDialogRemove({ open: true, id: member.id, name: member.name })} />
+                </Tooltip>
+              </Box>
             </Box>
           ))}
         </Box>

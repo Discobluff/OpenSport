@@ -44,10 +44,10 @@ func CreateTraining(c *gin.Context) {
 		return
 	}
 
-	if sport.AdminID != creatorID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Only sport admin can create trainings"})
-		return
-	}
+	// if !creatorID in sport.AdminsID {
+	// 	c.JSON(http.StatusForbidden, gin.H{"error": "Only sport admin can create trainings"})
+	// 	return
+	// }
 	maxParticipants, err := strconv.Atoi(req.MaxParticipants)
 	if err != nil {
 		maxParticipants = 0

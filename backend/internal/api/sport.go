@@ -30,7 +30,7 @@ func CreateSport(c *gin.Context) {
 	sport := models.Sport{
 		Name:        req.Name,
 		Description: req.Description,
-		AdminID:     adminID,
+		AdminsID:    []primitive.ObjectID{adminID},
 		Members:     []primitive.ObjectID{adminID},
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -79,6 +79,68 @@ func GetSport(c *gin.Context) {
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"sport": sport, "members":members})
+}
+
+func SetMemberSport(c *gin.Context) {
+	sportID := c.Param("id")
+	sportObjID, err := primitive.ObjectIDFromHex(sportID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sport ID"})
+		return
+	}
+
+	userID := c.Param("idUser")
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	collection := database.GetCollection("sports")
+	_, err = collection.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": sportObjID},
+		bson.M{
+			"$pull":     bson.M{"admins_id": userObjID},
+		},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove user from admin list"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully removed user from admin list"})
+}
+
+func SetAdminSport(c *gin.Context) {
+	sportID := c.Param("id")
+	sportObjID, err := primitive.ObjectIDFromHex(sportID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sport ID"})
+		return
+	}
+
+	userID := c.Param("idUser")
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	collection := database.GetCollection("sports")
+	_, err = collection.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": sportObjID},
+		bson.M{
+			"$addToSet":     bson.M{"admins_id": userObjID},
+		},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add user to admin list"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully added user to admin list"})
 }
 
 func GetSports(c *gin.Context) {
