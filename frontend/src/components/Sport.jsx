@@ -233,7 +233,7 @@ const Sport = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => handleJoinSport()}
+            onClick={handleJoinSport}
             sx={{ ml: 2 }}
           >
             Rejoindre le sport
