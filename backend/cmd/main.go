@@ -26,6 +26,7 @@ func main() {
 
 	// Initialize Gin router
 	r := gin.Default()
+	adminService := api.NewAdminService()
 
 	// CORS middleware
 	r.Use(cors.New(cors.Config{
@@ -76,7 +77,7 @@ func main() {
 		protected.POST("/trainings/:id/join", api.JoinTraining)
 		protected.POST("/trainings/:id/leave", api.LeaveTraining)
 		protected.POST("/trainings/:id/delete", api.DeleteTraining)
-		protected.POST("/trainings/:id/edit", api.EditTraining)
+		protected.POST("/trainings/:id/edit",auth.AdminOfSportOnly(adminService), api.EditTraining)
 		protected.POST("/trainings/:id/remove/:idUser", api.RemoveFromTraining)
 	}
 

@@ -3,7 +3,6 @@ package auth
 import (
 	"net/http"
 	"strings"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -78,6 +77,39 @@ func LicensedOnly() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		c.Next()
+	}
+}
+
+func AdminOfSportOnly(adminSportChecker AdminSportChecker) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		trainingID := c.Param("id")
+		if trainingID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing training id"})
+			c.Abort()
+			return
+		}
+
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "User non auth"})
+			c.Abort()
+			return
+		}
+		println(trainingID,userID.(string))
+		isAdmin, err := adminSportChecker.IsUserAdminOfSport(userID.(string), trainingID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Serveur error"})
+			c.Abort()
+			return
+		}
+
+		if !isAdmin {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Sport admin access required"})
+			c.Abort()
+			return
+		}
+
 		c.Next()
 	}
 }

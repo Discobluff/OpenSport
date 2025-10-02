@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"slices"
 )
 
 func CreateSport(c *gin.Context) {
@@ -112,6 +114,62 @@ func SetMemberSport(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully removed user from admin list"})
 }
 
+type AdminService struct {
+    collection *mongo.Collection
+}
+
+
+func NewAdminService() *AdminService {
+	return &AdminService{
+		collection: database.GetCollection("sports"),
+	}
+}
+
+func (s *AdminService) IsUserAdminOfSport(userID, trainingID string) (bool, error) {
+	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
+	if err != nil {
+		return false, err
+	}
+
+	var training struct {
+		SportID primitive.ObjectID `bson:"sport_id"`
+	}
+
+	trainingCollection := database.GetCollection("trainings")
+	err = trainingCollection.FindOne(context.TODO(), bson.M{"_id": trainingObjID}).Decode(&training)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil
+		}
+		return false, err
+	}
+
+	sportObjID := training.SportID
+
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return false, err
+	}
+
+	var sport struct {
+		AdminsID []primitive.ObjectID `bson:"admins_id"`
+	}
+
+	sportConnection := database.GetCollection("sports")
+	err = sportConnection.FindOne(context.TODO(), bson.M{"_id": sportObjID}).Decode(&sport)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil
+		}
+		return false, err
+	}
+
+	if slices.Contains(sport.AdminsID, userObjID) {
+			return true, nil
+		}
+
+	return false, nil
+}
 func SetAdminSport(c *gin.Context) {
 	sportID := c.Param("id")
 	sportObjID, err := primitive.ObjectIDFromHex(sportID)
