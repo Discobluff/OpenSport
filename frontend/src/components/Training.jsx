@@ -102,9 +102,9 @@ const Sports = () => {
       setError("L'entraînement n'a pas pu être modifié")
     }
   };
-  
+
   const getDay = (date) => {
-    let res =  dayjs(date).locale('fr').format("dddd");
+    let res = dayjs(date).locale('fr').format("dddd");
     return res.charAt(0).toUpperCase() + res.slice(1);
   };
 
@@ -151,8 +151,8 @@ const Sports = () => {
     return userSports.some(sport => sport.id === sportId);
   };
 
-  const isUserAdminOfSport = (sport) => {
-    return sport.admin_id === user?.id;
+  const isUserAdminOfSport = (userId) => {
+    return sport.admins_id != undefined && userId != undefined ? sport.admins_id === userId : false;
   };
 
   const updateEdit = () => {
@@ -185,12 +185,16 @@ const Sports = () => {
       </Tooltip>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography variant='h3'>Entraînement de {sport.name}</Typography>
-        <Tooltip title="Modifier l'entraînement" arrow>
-          <EditIcon fontSize='large' sx={{ ml: 2, cursor: 'pointer' }} onClick={() => setDialogEdit({ ...dialogEdit, open: true })} />
-        </Tooltip>
-        <Tooltip title="Supprimer l'entraînement" arrow>
-          <DeleteIcon onClick={() => setDialogDelete(true)} fontSize='large' sx={{ cursor: 'pointer' }} />
-        </Tooltip>
+        {(user.role === "Admin" || isUserAdminOfSport(user.id)) && (
+          <Tooltip title="Modifier l'entraînement" arrow>
+            <EditIcon fontSize='large' sx={{ ml: 2, cursor: 'pointer' }} onClick={() => setDialogEdit({ ...dialogEdit, open: true })} />
+          </Tooltip>
+        )}
+        {(user.role === "Admin" || isUserAdminOfSport(user.id)) && (
+          <Tooltip title="Supprimer l'entraînement" arrow>
+            <DeleteIcon onClick={() => setDialogDelete(true)} fontSize='large' sx={{ cursor: 'pointer' }} />
+          </Tooltip>
+        )}
       </Box>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
@@ -297,9 +301,11 @@ const Sports = () => {
               }}
             >
               <Typography variant="h6">{member.username}</Typography>
-              <Tooltip title="Retirer de l'entraînement" arrow>
-                <PersonRemoveIcon sx={{ cursor: "pointer" }} onClick={() => setDialogRemove({ open: true, id: member.id, name: member.username })} />
-              </Tooltip>
+              {(user.role === "Admin" || isUserAdminOfSport(user.id)) && (
+                <Tooltip title="Retirer de l'entraînement" arrow>
+                  <PersonRemoveIcon sx={{ cursor: "pointer" }} onClick={() => setDialogRemove({ open: true, id: member.id, name: member.username })} />
+                </Tooltip>
+              )}
             </Box>
           ))}
         </Box>
