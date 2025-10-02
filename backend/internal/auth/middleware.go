@@ -81,10 +81,17 @@ func LicensedOnly() gin.HandlerFunc {
 	}
 }
 
+// The adminSportChecker is a function which take in first argument the userID, and in the second argument, either the sportID or the trainingID
 func AdminOfSportOnly(adminSportChecker AdminSportChecker) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		trainingID := c.Param("id")
-		if trainingID == "" {
+		role, exists := c.Get("role")
+		if exists && role == "Admin" {
+			c.Next()
+			return
+		}
+
+		paramID := c.Param("id")
+		if paramID == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing training id"})
 			c.Abort()
 			return
@@ -96,8 +103,8 @@ func AdminOfSportOnly(adminSportChecker AdminSportChecker) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		println(trainingID,userID.(string))
-		isAdmin, err := adminSportChecker.IsUserAdminOfSport(userID.(string), trainingID)
+		
+		isAdmin, err := adminSportChecker(userID.(string), paramID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Serveur error"})
 			c.Abort()

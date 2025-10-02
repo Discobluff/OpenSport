@@ -41,7 +41,7 @@ const Users = () => {
 
   const deleteUser = async () =>{
     try {
-      await axios.post(`http://localhost:8080/api/user/${openDialogDelete.userId}/delete`);
+      await axios.post(`http://localhost:8080/api/users/${openDialogDelete.userId}/delete`);
       setSuccess('Membre supprimé');
       fetchUsers();
     } catch (error) {

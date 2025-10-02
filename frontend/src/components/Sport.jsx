@@ -50,7 +50,7 @@ const Sport = () => {
 
   const deleteSport = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/sport/${sport.id}/delete`);
+      await axios.post(`http://localhost:8080/api/sports/${sport.id}/delete`);
       navigate("/sports");
     } catch (error) {
       console.error('Echec de la suppression du sport', error);
@@ -59,9 +59,13 @@ const Sport = () => {
 
   const editSport = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/sport/${sport.id}/edit`, { name: dialogEdit.name, description: dialogEdit.description });
+      await axios.post(`http://localhost:8080/api/sports/${sport.id}/edit`, { name: dialogEdit.name, description: dialogEdit.description });
+      setSuccess("Sport modifié avec succès");
+      setError("");
       fetchSport();
     } catch (error) {
+      setError("Echec de la modification du sport")
+      setSuccess("");
       console.error("Echec de l'édition du sport", error);
     }
   };
@@ -74,7 +78,7 @@ const Sport = () => {
 
   const createNewTraining = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/trainings`, { ...newTraining, sport_id: sport.id, date: newTraining.date.format('YYYY/MM/DD'), time_start: newTraining.time_start.format('HH:mm'), time_end: newTraining.time_end.format('HH:mm') });
+      await axios.post(`http://localhost:8080/api/sports/${id}/trainings`, { ...newTraining, sport_id: sport.id, date: newTraining.date.format('YYYY/MM/DD'), time_start: newTraining.time_start.format('HH:mm'), time_end: newTraining.time_end.format('HH:mm') });
       setNewTraining({ title: "", description: "", date: null, time_start: null, time_end: null, location: "", max_participants: "" });
       setSuccess("Nouvel entraînement créé");
       fetchTrainings();
@@ -109,16 +113,18 @@ const Sport = () => {
       const response = await axios.post(`http://localhost:8080/api/sports/${id}/remove/${userId}`);
       fetchSport();
       fetchTrainings();
+      setError("");
       setSuccess('Membre retiré avec succès');
     } catch (error) {
       console.error("Echec du retirement du sport", error);
-      setSuccess("Le membre n'a pas pu être retiré");
+      setSuccess("");
+      setError("Le membre n'a pas pu être retiré");
     }
   };
 
   const fetchSport = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/sport/${id}`);
+      const response = await axios.get(`http://localhost:8080/api/sports/${id}`);
       setSport(response.data.sport || []);
       setMembers(response.data.members || []);
     } catch (error) {
@@ -152,7 +158,7 @@ const Sport = () => {
 
   const fetchTrainings = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/trainings/${id}`);
+      const response = await axios.get(`http://localhost:8080/api/sports/${id}/trainings`);
       setTrainings(response.data.trainings || []);
     } catch (error) {
       console.error('Echec de la récupération des entraînements', error);
@@ -166,7 +172,7 @@ const Sport = () => {
     setSuccess('');
 
     try {
-      await axios.post(`http://localhost:8080/api/sport/${sport.id}/join`);
+      await axios.post(`http://localhost:8080/api/sports/${sport.id}/join`);
       setSuccess('Vous avez rejoint le sport avec succès !');
       fetchSport();
     } catch (error) {
@@ -323,7 +329,7 @@ const Sport = () => {
             <Tooltip title="Accéder à l'entraînement" arrow>
               <Box
                 key={training.id}
-                onClick={() => navigate(`/training/${training.id}`)}
+                onClick={() => navigate(`/trainings/${training.id}`)}
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',

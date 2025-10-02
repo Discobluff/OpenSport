@@ -26,7 +26,10 @@ func main() {
 
 	// Initialize Gin router
 	r := gin.Default()
-	adminService := api.NewAdminService()
+
+	// Get the auth functions to know if the user is the admin of the sport, either with trainingID or sportID in the route parameter
+	var adminSportCheckerTrainingID auth.AdminSportChecker = api.IsUserAdminOfSportFromTrainingID
+	var adminSportCheckerSportID auth.AdminSportChecker = api.IsUserAdminOfSportFromSportID
 
 	// CORS middleware
 	r.Use(cors.New(cors.Config{
@@ -53,32 +56,32 @@ func main() {
 		protected.GET("/user/trainings", api.GetUserTrainings)
 		// Admin routes
 		protected.GET("/users", auth.AdminOnly(), api.GetUsers)
-		protected.POST("/user/:id/delete", auth.AdminOnly(), api.DeleteUser)
+		protected.POST("/users/:id/delete", auth.AdminOnly(), api.DeleteUser)
 		protected.POST("/role", auth.AdminOnly(), api.ChangeRole)
 		
 		// Sport routes
 		protected.GET("/sports", api.GetSports)
 		// Licensed
-		protected.POST("/sport/:id/join", auth.LicensedOnly(), api.JoinSport)
+		protected.POST("/sports/:id/join", auth.LicensedOnly(), api.JoinSport)
 		// Member of the sport
-		protected.GET("/sport/:id", auth.LicensedOnly(), api.GetSport)
+		protected.GET("/sports/:id", auth.LicensedOnly(), api.GetSport)
 		// Admin routes
 		protected.POST("/sports", auth.AdminOnly(), api.CreateSport)
-		protected.POST("/sport/:id/delete", auth.AdminOnly(), api.DeleteSport)
-		protected.POST("/sport/:id/edit", auth.AdminOnly(), api.EditSport)
-		protected.POST("/sports/:id/remove/:idUser", api.RemoveFromSport)
-		protected.POST("/sports/:id/admin/:idUser", api.SetAdminSport)
-		protected.POST("/sports/:id/member/:idUser", api.SetMemberSport)
+		protected.POST("/sports/:id/delete", auth.AdminOnly(), api.DeleteSport)
+		protected.POST("/sports/:id/edit", auth.AdminOfSportOnly(adminSportCheckerSportID), api.EditSport)
+		protected.POST("/sports/:id/remove/:idUser",  auth.AdminOfSportOnly(adminSportCheckerSportID), api.RemoveFromSport)
+		protected.POST("/sports/:id/admin/:idUser",  auth.AdminOnly(), api.SetAdminSport)
+		protected.POST("/sports/:id/member/:idUser",  auth.AdminOnly(), api.SetMemberSport)
+		protected.GET("/sports/:id/trainings", api.GetTrainings)
+		protected.POST("/sports/:id/trainings", auth.AdminOfSportOnly(adminSportCheckerSportID), api.CreateTraining)
 		
 		// Training routes
-		protected.GET("/trainings/:id", api.GetTrainings)
-		protected.GET("/training/:id", api.GetTraining)
-		protected.POST("/trainings", api.CreateTraining)
-		protected.POST("/trainings/:id/join", api.JoinTraining)
+		protected.GET("/trainings/:id", api.GetTraining)
+		protected.POST("/trainings/:id/join", auth.LicensedOnly(), api.JoinTraining)
 		protected.POST("/trainings/:id/leave", api.LeaveTraining)
-		protected.POST("/trainings/:id/delete", api.DeleteTraining)
-		protected.POST("/trainings/:id/edit",auth.AdminOfSportOnly(adminService), api.EditTraining)
-		protected.POST("/trainings/:id/remove/:idUser", api.RemoveFromTraining)
+		protected.POST("/trainings/:id/delete", auth.AdminOfSportOnly(adminSportCheckerTrainingID), api.DeleteTraining)
+		protected.POST("/trainings/:id/edit",auth.AdminOfSportOnly(adminSportCheckerTrainingID), api.EditTraining)
+		protected.POST("/trainings/:id/remove/:idUser", auth.AdminOfSportOnly(adminSportCheckerTrainingID), api.RemoveFromTraining)
 	}
 
 	// Health check

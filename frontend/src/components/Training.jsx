@@ -59,7 +59,7 @@ const Sports = () => {
   const fetchSport = async () => {
     if (training.sport_id != undefined) {
       try {
-        const response = await axios.get(`http://localhost:8080/api/sport/${training.sport_id}`);
+        const response = await axios.get(`http://localhost:8080/api/sports/${training.sport_id}`);
         setSport(response.data.sport || []);
       } catch (error) {
         console.error("Echec de la récupération du sport", error);
@@ -80,7 +80,7 @@ const Sports = () => {
 
   const fetchTraining = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/training/${id}`);
+      const response = await axios.get(`http://localhost:8080/api/trainings/${id}`);
       setTraining(response.data.training || []);
       setPresents(response.data.presents || []);
       setAbsents(response.data.absents || []);
@@ -94,7 +94,7 @@ const Sports = () => {
 
   const editTraining = async () => {
     try {
-      await axios.post(`http://localhost:8080/api/trainings/${id}/edit`, { ...dialogEdit, sport_id: sport.id, date: dialogEdit.date.format('DD/MM/YYYY'), time_start: dialogEdit.time_start.format('HH:mm'), time_end: dialogEdit.time_end.format('HH:mm') });
+      await axios.post(`http://localhost:8080/api/trainings/${id}/edit`, { ...dialogEdit, sport_id: sport.id, date: dialogEdit.date.format('YYYY/MM/DD'), time_start: dialogEdit.time_start.format('HH:mm'), time_end: dialogEdit.time_end.format('HH:mm') });
       fetchTraining();
       setSuccess("Entraînement modifié avec succès");
     } catch (error) {
@@ -111,7 +111,7 @@ const Sports = () => {
   const deleteTraining = async () => {
     try {
       await axios.post(`http://localhost:8080/api/trainings/${id}/delete`);
-      navigate(`/sport/${training.sport_id}`);
+      navigate(`/sports/${training.sport_id}`);
     } catch (error) {
       console.error("Echec de la suppression de l'entraînement", error);
     }
@@ -181,7 +181,7 @@ const Sports = () => {
   return (
     <Container sx={{ mt: 4 }}>
       <Tooltip placement="top" title="Retour au sport" arrow>
-        <ArrowBackIcon sx={{ cursor: 'pointer' }} onClick={() => navigate(`/sport/${sport.id}`)} />
+        <ArrowBackIcon sx={{ cursor: 'pointer' }} onClick={() => navigate(`/sports/${sport.id}`)} />
       </Tooltip>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography variant='h3'>Entraînement de {sport.name}</Typography>
@@ -204,7 +204,7 @@ const Sports = () => {
         </Alert>
       )}
 
-      <Typography variant='h4'>{dayjs(training.date).format("DD/MM/YYYY")}, {getDay(training.date)} de {training.time_start} à {training.time_end}</Typography>
+      <Typography variant='h4'>{dayjs(training.date).format("DD/MM/YYYY")}, {getDay(training.date)} de {training.time_start} à {training.time_end}, {training.location}</Typography>
       <Typography variant='h5' sx={{ mt: 3 }}>{training.title}</Typography>
       <Typography variant='h6' color="#595959" sx={{ mb: 3 }}>{training.description}</Typography>
 

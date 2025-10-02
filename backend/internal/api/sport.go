@@ -125,7 +125,7 @@ func NewAdminService() *AdminService {
 	}
 }
 
-func (s *AdminService) IsUserAdminOfSport(userID, trainingID string) (bool, error) {
+func IsUserAdminOfSportFromTrainingID(userID, trainingID string) (bool, error) {
 	trainingObjID, err := primitive.ObjectIDFromHex(trainingID)
 	if err != nil {
 		return false, err
@@ -170,6 +170,38 @@ func (s *AdminService) IsUserAdminOfSport(userID, trainingID string) (bool, erro
 
 	return false, nil
 }
+
+func IsUserAdminOfSportFromSportID(userID, sportID string) (bool, error) {
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return false, err
+	}
+
+	sportObjID, err := primitive.ObjectIDFromHex(sportID)
+	if err != nil {
+		return false, err
+	}
+
+	var sport struct {
+		AdminsID []primitive.ObjectID `bson:"admins_id"`
+	}
+
+	sportConnection := database.GetCollection("sports")
+	err = sportConnection.FindOne(context.TODO(), bson.M{"_id": sportObjID}).Decode(&sport)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil
+		}
+		return false, err
+	}
+
+	if slices.Contains(sport.AdminsID, userObjID) {
+			return true, nil
+		}
+
+	return false, nil
+}
+
 func SetAdminSport(c *gin.Context) {
 	sportID := c.Param("id")
 	sportObjID, err := primitive.ObjectIDFromHex(sportID)

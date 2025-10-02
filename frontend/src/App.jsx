@@ -52,7 +52,7 @@ function App() {
                         <Sports />
                       </ProtectedRoute>
                     } />
-                    <Route path="/sport/:id" element={
+                    <Route path="/sports/:id" element={
                       <ProtectedRoute>
                         <Sport />
                       </ProtectedRoute>
@@ -62,7 +62,7 @@ function App() {
                         <Users />
                       </ProtectedRoute>
                     } />
-                    <Route path="/training/:id" element={
+                    <Route path="/trainings/:id" element={
                       <ProtectedRoute>
                         <Training />
                       </ProtectedRoute>

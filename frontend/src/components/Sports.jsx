@@ -85,7 +85,7 @@ const Sports = () => {
     setSuccess('');
 
     try {
-      await axios.post(`http://localhost:8080/api/sport/${sportId}/join`);
+      await axios.post(`http://localhost:8080/api/sports/${sportId}/join`);
       setSuccess('Vous avez rejoint le sport avec succès !');
       fetchUserSports();
     } catch (error) {
@@ -145,7 +145,7 @@ const Sports = () => {
             <Card>
               <Tooltip placement="top" title="Aller sur la page du sport" arrow>
                 <CardContent
-                  onClick={(user.role !== "Non licencié") ? () => navigate(`/sport/${sport.id}`) : () => setError("Vous devez être licencié pour accéder aux sports. Si vous l'êtes, contactez un membre du bureau")}
+                  onClick={(user.role !== "Non licencié") ? () => navigate(`/sports/${sport.id}`) : () => setError("Vous devez être licencié pour accéder aux sports. Si vous l'êtes, contactez un membre du bureau")}
                   style={{ cursor: 'pointer' }}
                 >
                   <Typography variant="h6" gutterBottom>

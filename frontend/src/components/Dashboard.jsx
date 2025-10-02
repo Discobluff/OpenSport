@@ -72,7 +72,7 @@ const Dashboard = () => {
                       key={sport.id}
                       label={sport.name}
                       sx={{cursor:'pointer'}}
-                      onClick={()=>navigate(`/sport/${sport.id}`)}
+                      onClick={()=>navigate(`/sports/${sport.id}`)}
                       variant="outlined"
                       color="primary"
                     />
