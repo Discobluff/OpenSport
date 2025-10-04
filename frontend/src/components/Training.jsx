@@ -113,6 +113,7 @@ const Sports = () => {
   };
 
   const joinTraining = async () => {
+    handleJoinSport();
     try {
       const response = await axios.post(`http://localhost:8080/api/trainings/${id}/join`);
       fetchTraining();
@@ -124,8 +125,11 @@ const Sports = () => {
   };
 
   const leaveTraining = async () => {
+    setSuccess('');
+    setError('');
+    handleJoinSport();
     try {
-      const response = await axios.post(`http://localhost:8080/api/trainings/${id}/leave`);
+      await axios.post(`http://localhost:8080/api/trainings/${id}/leave`);
       fetchTraining();
     } catch (error) {
       console.error("Echec du quittage de l'entraînement", error);
@@ -148,6 +152,19 @@ const Sports = () => {
 
   const isUserAdminOfSport = (userId) => {
     return sport.admins_id != undefined && userId != undefined ? sport.admins_id === userId : false;
+  };
+
+  const handleJoinSport = async () => {
+    setError('');
+    setSuccess('');
+
+    try {
+      await axios.post(`http://localhost:8080/api/sports/${sport.id}/join`);
+      setSuccess('Vous avez rejoint le sport avec succès !');
+      fetchSport();
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to join sport');
+    }
   };
 
   const updateEdit = () => {

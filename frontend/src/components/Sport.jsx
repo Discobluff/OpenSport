@@ -110,15 +110,15 @@ const Sport = () => {
   };
 
   const removeFromSport = async (userId) => {
+    setSuccess('');
+    setError('');
     try {
       const response = await axios.post(`http://localhost:8080/api/sports/${id}/remove/${userId}`);
       fetchSport();
       fetchTrainings();
-      setError("");
       setSuccess('Membre retiré avec succès');
     } catch (error) {
       console.error("Echec du retirement du sport", error);
-      setSuccess("");
       setError("Le membre n'a pas pu être retiré");
     }
   };
@@ -136,17 +136,23 @@ const Sport = () => {
   };
 
   const leaveSport = async () => {
+    setSuccess('');
+    setError('');
     try {
       await axios.post(`http://localhost:8080/api/sports/${id}/leave`);
-      navigate("/sports");
+      fetchSport();
+      fetchTrainings();
     } catch (error) {
       console.error("Echec du quittage du sport", error);
     }
   };
 
   const joinTraining = async (trainingId) => {
+    setSuccess('');
+    setError('');
+    handleJoinSport();
     try {
-      const response = await axios.post(`http://localhost:8080/api/trainings/${trainingId}/join`);
+      await axios.post(`http://localhost:8080/api/trainings/${trainingId}/join`);
       fetchTrainings();
     } catch (error) {
       console.error("Echec du rejoignement de l'entraînement", error);
@@ -156,6 +162,9 @@ const Sport = () => {
   };
 
   const leaveTraining = async (trainingId) => {
+    setSuccess('');
+    setError('');
+    handleJoinSport();
     try {
       const response = await axios.post(`http://localhost:8080/api/trainings/${trainingId}/leave`);
       fetchTrainings();
@@ -180,7 +189,6 @@ const Sport = () => {
   const handleJoinSport = async () => {
     setError('');
     setSuccess('');
-
     try {
       await axios.post(`http://localhost:8080/api/sports/${sport.id}/join`);
       setSuccess('Vous avez rejoint le sport avec succès !');
