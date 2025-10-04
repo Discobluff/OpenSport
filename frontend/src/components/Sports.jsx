@@ -51,7 +51,7 @@ const Sports = () => {
 
   const fetchUserSports = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/user/sports');
+      const response = await axios.get(`http://localhost:8080/api/users/${user.id}/sports`);
       setUserSports(response.data.sports || []);
     } catch (error) {
       console.error('Echec de la récupération des sports du membre :', error);
@@ -98,7 +98,7 @@ const Sports = () => {
   };
 
   const isUserAdminOfSport = (sport) => {
-    return sport.admin_id === user?.id;
+    return sport.admins_id.includes(user.id);
   };
 
   if (loading) {
@@ -165,6 +165,9 @@ const Sports = () => {
               <CardActions>
                 {isUserInSport(sport.id) && (
                   <Chip label="Rejoint" color="success" variant="outlined" />
+                )}
+                {isUserAdminOfSport(sport) && (
+                  <Chip label="Admin" color="error" variant="outlined" />
                 )}
               </CardActions>
             </Card>

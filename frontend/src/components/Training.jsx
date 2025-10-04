@@ -3,9 +3,6 @@ import {
   Container,
   Typography,
   Grid,
-  Card,
-  CardContent,
-  CardActions,
   Button,
   Dialog,
   DialogTitle,
@@ -13,7 +10,6 @@ import {
   DialogActions,
   TextField,
   Box,
-  Chip,
   Alert,
   Tooltip,
 } from '@mui/material';
@@ -84,7 +80,6 @@ const Sports = () => {
       setTraining(response.data.training || []);
       setPresents(response.data.presents || []);
       setAbsents(response.data.absents || []);
-      console.log(dayjs(training.date).locale("fr").format("dddd"));
     } catch (error) {
       console.error("Echec de la récupération de l'entraînement", error);
     } finally {

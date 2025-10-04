@@ -51,11 +51,12 @@ func main() {
 	protected.Use(auth.JWTAuthMiddleware())
 	{
 		// User routes
-		protected.GET("/profile", api.GetProfile)
-		protected.GET("/user/sports", api.GetUserSports)
-		protected.GET("/user/trainings", api.GetUserTrainings)
+		protected.GET("/profile", api.GetProfile)//To delete
+		protected.GET("/users/:id/sports", api.GetUserSports)//Autoriser seulement pour admin ? mais aussi pour l'utiliseur qui demande ses sports
+		protected.GET("/users/:id/trainings", api.GetUserTrainings)
 		// Admin routes
 		protected.GET("/users", auth.AdminOnly(), api.GetUsers)
+		protected.GET("/users/:id", api.GetUser)
 		protected.POST("/users/:id/delete", auth.AdminOnly(), api.DeleteUser)
 		protected.POST("/role", auth.AdminOnly(), api.ChangeRole)
 		

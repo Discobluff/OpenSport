@@ -12,6 +12,8 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import 'dayjs/locale/fr';
+import dayjs from 'dayjs';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -20,12 +22,27 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+    const getDay = (date) => {
+      let res = dayjs(date).locale('fr').format("dddd");
+      return res.charAt(0).toUpperCase() + res.slice(1);
+    };
+  
+    const getSportName = (sportId) => {
+      let res = "";
+      userSports.forEach(sport => {
+        if (sport.id === sportId) {
+          res = sport.name;
+        }
+      });
+      return res;
+    };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [sportsResponse, trainingsResponse] = await Promise.all([
-          axios.get('http://localhost:8080/api/user/sports'),
-          axios.get('http://localhost:8080/api/user/trainings'),
+          axios.get(`http://localhost:8080/api/users/${user.id}/sports`),
+          axios.get(`http://localhost:8080/api/users/${user.id}/trainings`),
         ]);
 
         setUserSports(sportsResponse.data.sports || []);
@@ -84,41 +101,43 @@ const Dashboard = () => {
           </Card>
         </Grid>
 
-        {/* My Trainings */}
-        <Grid>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Mes entraînements ({userTrainings.length})
-              </Typography>
-              {userTrainings.length === 0 ? (
-                <Typography color="text.secondary">
-                  Vous n'avez rejoint aucun entraînement.
+       
+          <Grid>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+            Mes entraînements ({userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length})
                 </Typography>
-              ) : (
-                <Box>
-                  {userTrainings.slice(0, 3).map((training) => (
-                    <Box key={training.id} sx={{ mb: 1 }}>
-                      <Typography variant="body2" fontWeight="bold">
-                        {training.title}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {new Date(training.date_time).toLocaleDateString()} - {training.location}
-                      </Typography>
-                    </Box>
-                  ))}
-                  {userTrainings.length > 3 && (
-                    <Typography variant="caption" color="text.secondary">
-                      +{userTrainings.length - 3} more...
-                    </Typography>
-                  )}
-                </Box>
+                {userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length === 0 ? (
+            <Typography color="text.secondary">
+              Vous n'avez rejoint aucun entraînement à venir.
+            </Typography>
+                ) : (
+            <Box>
+              {userTrainings
+                .filter(training => dayjs(training.date).isAfter(dayjs()))
+                .map((training) => (
+                  <Box key={training.id} sx={{ mb: 1 }}>
+              <Typography variant="body2" fontWeight="bold">
+                {getSportName(training.sport_id)}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {getDay(training.date)} {dayjs(training.date).format("DD/MM/YYYY")} - {training.location}
+              </Typography>
+                  </Box>
+                ))}
+              {userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length > 3 && (
+                <Typography variant="caption" color="text.secondary">
+                  +{userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length - 3} more...
+                </Typography>
               )}
-            </CardContent>
-          </Card>
-        </Grid>
+            </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
 
-        {/* User Info */}
+          {/* User Info */}
         <Grid>
           <Card>
             <CardContent>

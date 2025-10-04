@@ -356,15 +356,15 @@ func LeaveTraining(c *gin.Context) {
 }
 
 func GetUserTrainings(c *gin.Context) {
-	userID, _ := c.Get("user_id")
-	userObjID, err := primitive.ObjectIDFromHex(userID.(string))
+	userID := c.Param("id")
+	userObjID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
 	collection := database.GetCollection("trainings")
-	cursor, err := collection.Find(context.TODO(), bson.M{"presents": userObjID})
+	cursor, err := collection.Find(context.TODO(), bson.M{"presents": userObjID}, options.Find().SetSort(bson.D{{Key: "date", Value: -1}}))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user trainings"})
 		return

@@ -418,8 +418,8 @@ func JoinSport(c *gin.Context) {
 }
 
 func GetUserSports(c *gin.Context) {
-	userID, _ := c.Get("user_id")
-	userObjID, err := primitive.ObjectIDFromHex(userID.(string))
+	userID := c.Param("id")
+	userObjID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return

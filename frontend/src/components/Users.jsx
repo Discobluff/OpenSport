@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -23,6 +24,7 @@ const Users = () => {
   const [success, setSuccess] = useState('');
   const [searchName, setSearchName] = useState('');
   const [searchRole, setSearchRole] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
@@ -114,16 +116,18 @@ const Users = () => {
         {users.map((user) => (
           <Box
             key={user.id}
+            onClick={()=>navigate(`/users/${user.id}`)}
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               p: 2,
               borderBottom: '1px solid #ccc',
+               cursor:'pointer',
             }}
           >
             <Typography variant="h6">{user.username}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }} onClick={(e) => e.stopPropagation()}>
               <select
                 value={user.role}
                 onChange={(e) => {
