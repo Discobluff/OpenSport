@@ -74,6 +74,7 @@ func main() {
 		protected.POST("/sports/:id/admin/:idUser",  auth.AdminOnly(), api.SetAdminSport)
 		protected.POST("/sports/:id/member/:idUser",  auth.AdminOnly(), api.SetMemberSport)
 		protected.GET("/sports/:id/trainings", api.GetTrainings)
+		protected.POST("/sports/:id/leave", api.LeaveSport)
 		protected.POST("/sports/:id/trainings", auth.AdminOfSportOnly(adminSportCheckerSportID), api.CreateTraining)
 		
 		// Training routes

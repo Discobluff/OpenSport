@@ -14,7 +14,7 @@ import {
   Alert,
   Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon, PersonRemove as PersonRemoveIcon, AddModerator as AddModeratorIcon, RemoveModerator as RemoveModeratorIcon, ArrowBack as ArrowBackIcon, } from '@mui/icons-material';
+import { ExitToApp as ExitToAppIcon, Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon, PersonRemove as PersonRemoveIcon, AddModerator as AddModeratorIcon, RemoveModerator as RemoveModeratorIcon, ArrowBack as ArrowBackIcon, } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
@@ -34,6 +34,7 @@ const Sport = () => {
   const [loading, setLoading] = useState(true);
   const [dialogEdit, setDialogEdit] = useState({ open: false, name: '', description: '' });
   const [dialogDelete, setDialogDelete] = useState(false);
+  const [dialogLeave, setDialogLeave] = useState(false);
   const [dialogCreateTraining, setDialogCreateTraining] = useState(false);
   const [newTraining, setNewTraining] = useState({ title: "", description: "", date: null, time_start: null, time_end: null, location: "", max_participants: "" });
   const [activePanel, setActivePanel] = useState('trainings');
@@ -134,6 +135,15 @@ const Sport = () => {
     }
   };
 
+  const leaveSport = async () => {
+    try {
+      await axios.post(`http://localhost:8080/api/sports/${id}/leave`);
+      navigate("/sports");
+    } catch (error) {
+      console.error("Echec du quittage du sport", error);
+    }
+  };
+
   const joinTraining = async (trainingId) => {
     try {
       const response = await axios.post(`http://localhost:8080/api/trainings/${trainingId}/join`);
@@ -222,6 +232,11 @@ const Sport = () => {
         <Typography variant="h4" component="h1">
           {sport.name}
         </Typography>
+        {isUserInSport() && (
+          <Tooltip title="Quitter le sport" arrow>
+            <ExitToAppIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogLeave(true)} />
+          </Tooltip>
+        )}
         {(user.role === "Admin" || isUserAdminOfSport(user.id)) && (
           <Tooltip title="Modifier le sport" arrow>
             <EditIcon sx={{ cursor: 'pointer', ml: 2 }} onClick={() => setDialogEdit({ open: true, id: sport.id, name: sport.name, description: sport.description })} />
@@ -632,6 +647,26 @@ const Sport = () => {
             color="error"
           >
             Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={dialogLeave} onClose={() => setDialogLeave(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Confirmer l'action</DialogTitle>
+        <DialogContent>
+          <Typography>Êtes-vous sûr de vouloir quitter le sport ?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogLeave(false)}>Annuler</Button>
+          <Button
+            onClick={() => {
+              leaveSport();
+              setDialogLeave(false);
+            }}
+            variant="contained"
+            color="error"
+          >
+            Quitter
           </Button>
         </DialogActions>
       </Dialog>
