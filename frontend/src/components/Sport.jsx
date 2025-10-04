@@ -14,7 +14,7 @@ import {
   Alert,
   Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon, PersonRemove as PersonRemoveIcon, AddModerator as AddModeratorIcon, RemoveModerator as RemoveModeratorIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Check as CheckIcon, Close as CloseIcon, PersonRemove as PersonRemoveIcon, AddModerator as AddModeratorIcon, RemoveModerator as RemoveModeratorIcon, ArrowBack as ArrowBackIcon, } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
@@ -215,6 +215,9 @@ const Sport = () => {
 
   return (
     <Container sx={{ mt: 4 }}>
+      <Tooltip placement="top" title="Retour à la liste des sports" arrow>
+        <ArrowBackIcon sx={{ cursor: 'pointer' }} onClick={() => navigate(`/sports`)} />
+      </Tooltip>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">
           {sport.name}

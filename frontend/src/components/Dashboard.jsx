@@ -22,20 +22,20 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-    const getDay = (date) => {
-      let res = dayjs(date).locale('fr').format("dddd");
-      return res.charAt(0).toUpperCase() + res.slice(1);
-    };
-  
-    const getSportName = (sportId) => {
-      let res = "";
-      userSports.forEach(sport => {
-        if (sport.id === sportId) {
-          res = sport.name;
-        }
-      });
-      return res;
-    };
+  const getDay = (date) => {
+    let res = dayjs(date).locale('fr').format("dddd");
+    return res.charAt(0).toUpperCase() + res.slice(1);
+  };
+
+  const getSportName = (sportId) => {
+    let res = "";
+    userSports.forEach(sport => {
+      if (sport.id === sportId) {
+        res = sport.name;
+      }
+    });
+    return res;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,14 +85,14 @@ const Dashboard = () => {
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {userSports.map((sport) => (
                     <Tooltip title="Aller sur la page du sport" arrow>
-                    <Chip
-                      key={sport.id}
-                      label={sport.name}
-                      sx={{cursor:'pointer'}}
-                      onClick={()=>navigate(`/sports/${sport.id}`)}
-                      variant="outlined"
-                      color="primary"
-                    />
+                      <Chip
+                        key={sport.id}
+                        label={sport.name}
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => navigate(`/sports/${sport.id}`)}
+                        variant="outlined"
+                        color="primary"
+                      />
                     </Tooltip>
                   ))}
                 </Box>
@@ -101,43 +101,38 @@ const Dashboard = () => {
           </Card>
         </Grid>
 
-       
-          <Grid>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-            Mes entraînements ({userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length})
-                </Typography>
-                {userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length === 0 ? (
-            <Typography color="text.secondary">
-              Vous n'avez rejoint aucun entraînement à venir.
-            </Typography>
-                ) : (
-            <Box>
-              {userTrainings
-                .filter(training => dayjs(training.date).isAfter(dayjs()))
-                .map((training) => (
-                  <Box key={training.id} sx={{ mb: 1 }}>
-              <Typography variant="body2" fontWeight="bold">
-                {getSportName(training.sport_id)}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {getDay(training.date)} {dayjs(training.date).format("DD/MM/YYYY")} - {training.location}
-              </Typography>
-                  </Box>
-                ))}
-              {userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length > 3 && (
-                <Typography variant="caption" color="text.secondary">
-                  +{userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length - 3} more...
-                </Typography>
-              )}
-            </Box>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
 
-          {/* User Info */}
+        <Grid>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Mes entraînements ({userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length})
+              </Typography>
+              {userTrainings.filter(training => dayjs(training.date).isAfter(dayjs())).length === 0 ? (
+                <Typography color="text.secondary">
+                  Vous n'avez rejoint aucun entraînement à venir.
+                </Typography>
+              ) : (
+                <Box>
+                  {userTrainings
+                    .filter(training => dayjs(training.date).isAfter(dayjs()))
+                    .map((training) => (
+                      <Box key={training.id} sx={{ mb: 1 }}>
+                        <Typography variant="body2" fontWeight="bold">
+                          {getSportName(training.sport_id)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {getDay(training.date)} {dayjs(training.date).format("DD/MM/YYYY")} - {training.location}
+                        </Typography>
+                      </Box>
+                    ))}
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* User Info */}
         <Grid>
           <Card>
             <CardContent>
