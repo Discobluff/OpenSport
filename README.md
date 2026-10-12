@@ -10,6 +10,29 @@ A web application for sport associations built with Go backend, MongoDB database
 - **Dashboard**: Overview of user's sports and trainings
 - **Role-based Access**: Different permissions for regular users and sport admins
 
+## Presentation
+
+**Home page**
+
+![Menu](./images/menu.png)
+
+**Sports list**
+
+![Sports list](./images/sports.png)
+
+**Sport page**
+
+![Sport page](./images/sport.png)
+
+**Training**
+
+![Training](./images/training.png)
+
+**Members**
+
+![Members](./images/members.png)
+
+
 ## Technology Stack
 
 - **Backend**: Go with Gin framework
